@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "BRIO — Plataforma de Produtividade"
+version = "1.0.0"
+id = "artifacts/brio"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22752
+
+[services.development]
+run = "pnpm --filter @workspace/brio run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/brio", "run", "build" ]
+publicDir = "artifacts/brio/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22752"
+BASE_PATH = "/"
