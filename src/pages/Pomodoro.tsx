@@ -38,12 +38,20 @@ const BACKGROUNDS = {
   lofi: {
     label: "Lofi",
     description: "Luzes baixas, ritmo macio",
+<<<<<<< HEAD
+=======
+    url: "https://media.giphy.com/media/26BRuo6sLetdllPAQ/200.gif",
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
     fallback:
       "radial-gradient(circle at 18% 18%, hsl(270 42% 25% / 0.72), transparent 32%), radial-gradient(circle at 84% 78%, hsl(176 48% 19% / 0.4), transparent 28%), linear-gradient(135deg, hsl(231 29% 8%), hsl(252 28% 13%) 52%, hsl(184 28% 9%))",
   },
   study: {
     label: "Estudo",
     description: "Clareza para sessões densas",
+<<<<<<< HEAD
+=======
+    url: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/200.gif",
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
     fallback:
       "radial-gradient(circle at 78% 12%, hsl(176 54% 24% / 0.55), transparent 30%), radial-gradient(circle at 12% 88%, hsl(43 63% 21% / 0.35), transparent 34%), linear-gradient(135deg, hsl(220 28% 8%), hsl(205 28% 13%) 52%, hsl(174 25% 10%))",
   },
@@ -248,7 +256,11 @@ export default function Pomodoro() {
   const pageBackground =
     backgroundChoice === "custom" && customBackgroundImage
       ? customBackgroundImage
+<<<<<<< HEAD
       : BACKGROUNDS[backgroundChoice === "custom" ? "lofi" : backgroundChoice].fallback;
+=======
+      : `url("${BACKGROUNDS[backgroundChoice === "custom" ? "lofi" : backgroundChoice].url}"), ${BACKGROUNDS[backgroundChoice === "custom" ? "lofi" : backgroundChoice].fallback}`;
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
 
   const youtubeSessions = [
     ...DEFAULT_YOUTUBE_SESSIONS,
@@ -825,7 +837,11 @@ export default function Pomodoro() {
                   backgroundChoice === "lofi" ? "border-primary ring-1 ring-primary" : "border-border hover:border-primary/50"
                 )}
                 style={{
+<<<<<<< HEAD
                   backgroundImage: BACKGROUNDS.lofi.fallback,
+=======
+                  backgroundImage: `linear-gradient(hsl(230 25% 7% / 0.4), hsl(230 25% 7% / 0.68)), url("${BACKGROUNDS.lofi.url}")`,
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -844,7 +860,11 @@ export default function Pomodoro() {
                   backgroundChoice === "study" ? "border-primary ring-1 ring-primary" : "border-border hover:border-primary/50"
                 )}
                 style={{
+<<<<<<< HEAD
                   backgroundImage: BACKGROUNDS.study.fallback,
+=======
+                  backgroundImage: `linear-gradient(hsl(230 25% 7% / 0.4), hsl(230 25% 7% / 0.68)), url("${BACKGROUNDS.study.url}")`,
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}

@@ -170,6 +170,7 @@ create policy "exam_plans_update_own" on public.exam_plans
 drop policy if exists "exam_plans_delete_own" on public.exam_plans;
 create policy "exam_plans_delete_own" on public.exam_plans
   for delete using (auth.uid() = user_id);
+<<<<<<< HEAD
 
 -- 7. Lista de administradores — SUBSTITUI o "role" nos metadados do usuário
 -- como fonte de verdade. Metadados de usuário (raw_user_meta_data) podem ser
@@ -212,3 +213,5 @@ alter table public.tasks add constraint tasks_xp_reward_check check (xp_reward >
 alter table public.quiz_results drop constraint if exists quiz_results_score_check;
 alter table public.quiz_results add constraint quiz_results_score_check
   check (correct >= 0 and total >= 0 and correct <= total);
+=======
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437

@@ -1,4 +1,5 @@
 import { useState } from "react";
+<<<<<<< HEAD
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, Flame, CheckCircle2, Timer, Star, Trophy, Lock,
@@ -9,6 +10,18 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useApp, calculateLevel } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
+=======
+import { motion } from "framer-motion";
+import {
+  Zap, Flame, CheckCircle2, Timer, Star, Trophy, Lock,
+  Pencil, LogOut, Download, ShieldAlert, Loader2
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { useApp, calculateLevel } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
 import { cn } from "@/lib/utils";
 import HeroBanner from "@/components/layout/HeroBanner";
 
@@ -48,11 +61,16 @@ const DIVISIONS = [
 ];
 
 export default function Profile() {
+<<<<<<< HEAD
   const { stats, tasks } = useApp();
+=======
+  const { stats, tasks, moodEntries, quizResults, examPlans } = useApp();
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("Temas");
   const [selectedTheme, setSelectedTheme] = useState("brio_classic");
+<<<<<<< HEAD
   const [showCard, setShowCard] = useState(false);
   const level = calculateLevel(stats.total_xp);
 
@@ -71,6 +89,12 @@ export default function Profile() {
     ? format(new Date(user.createdAt), "MMMM 'de' yyyy", { locale: ptBR })
     : null;
 
+=======
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const level = calculateLevel(stats.total_xp);
+
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
   const isUnlocked = (ach: typeof ACHIEVEMENTS[number]) => {
     switch (ach.type) {
       case "tasks_completed": return stats.tasks_completed >= ach.value;
@@ -86,6 +110,50 @@ export default function Profile() {
     navigate("/login");
   };
 
+<<<<<<< HEAD
+=======
+  const handleExportData = () => {
+    const payload = {
+      exported_at: new Date().toISOString(),
+      profile: { name: user?.name, email: user?.email, bio: user?.bio },
+      stats,
+      tasks,
+      moodEntries,
+      quizResults,
+      examPlans,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `brio-meus-dados-${format(new Date(), "yyyy-MM-dd")}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDeleteData = async () => {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      await Promise.all([
+        supabase.from("tasks").delete().eq("user_id", user.id),
+        supabase.from("mood_entries").delete().eq("user_id", user.id),
+        supabase.from("quiz_results").delete().eq("user_id", user.id),
+        supabase.from("exam_plans").delete().eq("user_id", user.id),
+        supabase.from("user_stats").delete().eq("user_id", user.id),
+      ]);
+      ["stats", "tasks", "mood", "quiz", "examplans", "pending"].forEach((k) =>
+        localStorage.removeItem(`brio_${k}_${user.id}`)
+      );
+    } finally {
+      logout();
+      navigate("/login");
+    }
+  };
+
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
   const initials = (user?.name || "U").slice(0, 2).toUpperCase();
 
   return (
@@ -104,12 +172,15 @@ export default function Profile() {
           <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
           {user?.bio && <p className="text-xs text-muted-foreground mt-0.5 truncate">{user.bio}</p>}
         </div>
+<<<<<<< HEAD
         <button
           onClick={() => setShowCard(true)}
           className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <Share2 className="w-3.5 h-3.5" /> Cartão
         </button>
+=======
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
         <Link
           to="/profile/edit"
           className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -118,6 +189,7 @@ export default function Profile() {
         </Link>
       </div>
 
+<<<<<<< HEAD
       <div className="bg-card border border-border rounded-2xl p-5 mb-6">
         <div className="flex items-center gap-2 mb-4">
           {memberSince && (
@@ -143,6 +215,8 @@ export default function Profile() {
         </div>
       </div>
 
+=======
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
       <div className="bg-card border border-border rounded-2xl p-5">
         <div className="flex gap-2 mb-5 flex-wrap">
           {TABS.map((tab) => (
@@ -264,6 +338,60 @@ export default function Profile() {
         )}
       </div>
 
+<<<<<<< HEAD
+=======
+      <div className="mt-4 bg-card border border-border rounded-2xl p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <ShieldAlert className="w-4 h-4 text-muted-foreground" />
+          <h3 className="text-sm font-semibold text-foreground">Privacidade e dados</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Conforme a LGPD, você pode baixar uma cópia de tudo que o BRIO guarda sobre você, ou apagar
+          esses dados quando quiser.
+        </p>
+
+        <button
+          onClick={handleExportData}
+          className="w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/40 hover:bg-secondary/70 text-sm text-foreground transition-colors mb-2"
+        >
+          <Download className="w-4 h-4" />
+          Exportar meus dados (.json)
+        </button>
+
+        {!confirmingDelete ? (
+          <button
+            onClick={() => setConfirmingDelete(true)}
+            className="w-full h-10 flex items-center justify-center gap-2 rounded-xl border border-destructive/30 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            Excluir meus dados
+          </button>
+        ) : (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 space-y-2">
+            <p className="text-xs text-foreground">
+              Isso apaga permanentemente suas tarefas, XP, streak, humor registrado, resultados de
+              quiz e planos de prova, e desconecta você. Essa ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmingDelete(false)}
+                disabled={deleting}
+                className="flex-1 h-9 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteData}
+                disabled={deleting}
+                className="flex-1 h-9 rounded-lg bg-destructive hover:bg-destructive/90 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60"
+              >
+                {deleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Sim, excluir tudo"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
       <div className="mt-4 text-center">
         <button
           onClick={handleLogout}
@@ -273,6 +401,7 @@ export default function Profile() {
           Sair da conta
         </button>
       </div>
+<<<<<<< HEAD
 
       <AnimatePresence>
         {showCard && (
@@ -348,6 +477,8 @@ export default function Profile() {
           </motion.div>
         )}
       </AnimatePresence>
+=======
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
     </div>
   );
 }

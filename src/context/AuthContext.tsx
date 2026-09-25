@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+=======
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -16,8 +20,11 @@ interface AuthState {
   user: UserProfile | null;
   isAuthenticated: boolean;
   loading: boolean;
+<<<<<<< HEAD
   /** true assim que já sabemos se o usuário atual é admin ou não (consulta na tabela `admins`). */
   roleResolved: boolean;
+=======
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
 }
 
 interface AuthContextType extends AuthState {
@@ -30,12 +37,15 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+<<<<<<< HEAD
 // IMPORTANTE: o "role" NUNCA é lido dos metadados do usuário (user_metadata).
 // Esse campo pode ser alterado pelo próprio usuário logado, então usá-lo pra
 // decidir quem é admin permitiria que qualquer pessoa se autopromovesse pelo
 // console do navegador. A tabela `admins` é a única fonte de verdade — e
 // ninguém com a chave publicável consegue escrever nela (sem política de
 // insert/update/delete).
+=======
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
 function profileFromAuthUser(authUser: User): UserProfile {
   const metadata = authUser.user_metadata ?? {};
 
@@ -44,8 +54,13 @@ function profileFromAuthUser(authUser: User): UserProfile {
     name: metadata.name || metadata.full_name || authUser.email?.split("@")[0] || "Estudante",
     email: authUser.email || "",
     bio: metadata.bio || "Comece sua jornada de produtividade.",
+<<<<<<< HEAD
     avatarColor: metadata.avatarColor || "#f5a623",
     role: "user",
+=======
+    avatarColor: metadata.avatarColor || "#7c3aed",
+    role: metadata.role === "admin" ? "admin" : "user",
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
     createdAt: authUser.created_at,
   };
 }
@@ -63,6 +78,7 @@ function translateAuthError(message: string) {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
   const [roleResolved, setRoleResolved] = useState(false);
 
   // Evita que a checagem de admin de uma sessão antiga sobrescreva o estado
@@ -88,6 +104,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [checkAdmin]
   );
 
+=======
+
+  const syncUser = useCallback((authUser: User | null) => {
+    setUser(authUser ? profileFromAuthUser(authUser) : null);
+  }, []);
+
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
   useEffect(() => {
     let mounted = true;
 
@@ -128,7 +151,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: name.trim(),
           full_name: name.trim(),
           bio: "Comece sua jornada de produtividade.",
+<<<<<<< HEAD
           avatarColor: "#f5a623",
+=======
+          avatarColor: "#7c3aed",
+          role: "user",
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
         },
       },
     });
@@ -193,11 +221,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     if (error) return { success: false, error: translateAuthError(error.message) };
+<<<<<<< HEAD
     // Preserva o role já resolvido — profileFromAuthUser sempre volta "user",
     // e updateUser não mexe na tabela admins.
     setUser((prev) => (prev ? { ...profileFromAuthUser(result.user), role: prev.role } : prev));
     return { success: true };
   }, [user]);
+=======
+    syncUser(result.user);
+    return { success: true };
+  }, [user, syncUser]);
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
 
   const changePassword = useCallback(async (currentPw: string, newPw: string) => {
     if (!user) return { success: false, error: "Não autenticado." };
@@ -221,7 +255,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: !!user,
         loading,
+<<<<<<< HEAD
         roleResolved,
+=======
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
         login,
         register,
         logout,

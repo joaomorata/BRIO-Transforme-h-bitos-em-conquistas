@@ -27,6 +27,7 @@ export default function AdminLogin() {
     }
 
     // O login usa o mesmo sistema de autenticação do BRIO (Supabase Auth) —
+<<<<<<< HEAD
     // a diferença é que essa tela exige que a conta esteja cadastrada na
     // tabela `admins` (protegida, ninguém consegue se autopromover a admin
     // sozinho). Contas comuns são recusadas e deslogadas na hora, mesmo com
@@ -45,6 +46,15 @@ export default function AdminLogin() {
       .maybeSingle();
 
     if (!adminRow) {
+=======
+    // a diferença é que essa tela exige que a conta esteja marcada como
+    // administradora (role "admin" nos metadados do usuário no Supabase).
+    // Contas comuns são recusadas e deslogadas na hora, mesmo com senha certa.
+    const { data } = await supabase.auth.getUser();
+    const role = data.user?.user_metadata?.role;
+
+    if (role !== "admin") {
+>>>>>>> 3239e0440856565940536f3ef89c6a821d8a4437
       await supabase.auth.signOut();
       setError("Esta conta não tem permissão de administrador.");
       setLoading(false);
