@@ -102,7 +102,7 @@ export default function Login() {
 
   const fillDemo = (type: "user" | "admin") => {
     setEmail(type === "admin" ? "admin@brio.app" : "demo@brio.app");
-    setPassword(type === "admin" ? "admin123" : "demo123");
+    setPassword(type === "admin" ? "admin123" : "demo1234");
     setError("");
   };
 
