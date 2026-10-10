@@ -62,7 +62,7 @@ export default function DailyXPCard({ stats, tasks }: DailyXPCardProps) {
       {todayXP === 0 ? (
         <p className="text-center text-sm font-bold text-foreground my-2">
           Hora de começar! <br />
-          <span className="text-xs font-normal text-muted-foreground">Todo progresso começa com o primeiro passo 🚀</span>
+          <span className="text-xs font-normal text-muted-foreground">Todo progresso começa com o primeiro passo.</span>
         </p>
       ) : (
         <p className="text-center text-sm text-muted-foreground my-2">

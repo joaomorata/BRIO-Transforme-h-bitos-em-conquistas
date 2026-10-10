@@ -1,15 +1,17 @@
 import { motion } from "framer-motion";
-import { Flame, Calendar, Zap } from "lucide-react";
+import { Flame, CheckCircle2 } from "lucide-react";
 import { calculateLevel, xpForNextLevel, type UserStats } from "@/context/AppContext";
 import { useAuth } from "@/context/AuthContext";
 import UserAvatar from "@/components/ui/UserAvatar";
 
+// Divisões usam os mesmos tokens de cor do resto do app (chart-1..5 no index.css),
+// não cores soltas — assim uma divisão nova nunca introduz uma cor fora da paleta.
 const DIVISIONS = [
-  { min: 0, label: "BRONZE", color: "from-amber-700 to-amber-500" },
-  { min: 5, label: "PRATA", color: "from-slate-400 to-slate-300" },
-  { min: 10, label: "OURO", color: "from-yellow-500 to-yellow-300" },
-  { min: 20, label: "PLATINA", color: "from-cyan-400 to-teal-300" },
-  { min: 30, label: "DIAMANTE", color: "from-blue-400 to-indigo-400" },
+  { min: 0, label: "Bronze", dot: "bg-[hsl(45_90%_60%)]", text: "text-[hsl(45_90%_60%)]" },
+  { min: 5, label: "Prata", dot: "bg-muted-foreground", text: "text-muted-foreground" },
+  { min: 10, label: "Ouro", dot: "bg-[hsl(45_90%_60%)]", text: "text-[hsl(45_90%_60%)]" },
+  { min: 20, label: "Platina", dot: "bg-accent", text: "text-accent" },
+  { min: 30, label: "Diamante", dot: "bg-primary", text: "text-primary" },
 ];
 
 function getDivision(level: number) {
@@ -37,62 +39,61 @@ export default function HeroBanner({ stats, userName }: HeroBannerProps) {
   const progressPct = nextXP > prevXP ? ((xp - prevXP) / (nextXP - prevXP)) * 100 : 0;
 
   return (
-    <div className="relative rounded-2xl overflow-hidden mb-6 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 p-4 md:p-5">
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <div className="absolute top-0 left-1/4 w-px h-full bg-white rotate-12 scale-150" />
-        <div className="absolute top-0 left-1/3 w-px h-full bg-white rotate-12 scale-150" />
-        <div className="absolute top-0 right-1/4 w-px h-full bg-white -rotate-12 scale-150" />
-      </div>
-
-      <div className="relative flex flex-col md:flex-row items-center gap-4">
-        <UserAvatar
-          url={user?.avatarUrl}
-          color={avatarColor}
-          name={displayName}
-          size={56}
-          className="rounded-xl border-2 border-white/40 text-xl"
-        />
-
-        <div className="flex-1 text-center md:text-left">
-          <p className="text-white font-bold text-lg leading-tight">
-            Olá, {displayName}! 👋
-          </p>
-          <div className={`inline-flex mt-1 px-2 py-0.5 rounded text-xs font-bold text-white bg-gradient-to-r ${division.color}`}>
-            Divisão {division.label}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 bg-black/30 rounded-xl px-4 py-2.5 min-w-[220px]">
-          <Flame className="w-6 h-6 text-orange-400 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-3 mb-1">
-              <span className="text-xs text-white/70 whitespace-nowrap">Nível {level}</span>
-              <span className="text-xs font-mono text-white font-bold whitespace-nowrap">{xp} / {nextXP} XP</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-white/20 overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-orange-400 to-yellow-300"
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPct}%` }}
-                transition={{ duration: 1 }}
-              />
+    <div className="mb-6 rounded-2xl border border-border bg-[hsl(230_30%_5%)] p-5 md:p-6">
+      <div className="flex flex-col gap-5 md:flex-row md:items-center">
+        <div className="flex items-center gap-3.5">
+          <UserAvatar
+            url={user?.avatarUrl}
+            color={avatarColor}
+            name={displayName}
+            size={52}
+            className="text-lg"
+          />
+          <div>
+            <p className="font-heading text-base font-bold leading-tight text-foreground">
+              Olá, {displayName}
+            </p>
+            <div className="mt-1 flex items-center gap-1.5">
+              <span className={`h-1.5 w-1.5 rounded-full ${division.dot}`} />
+              <span className={`text-xs font-semibold ${division.text}`}>
+                Divisão {division.label}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-black/30 rounded-xl px-4 py-2.5">
-          <Calendar className="w-5 h-5 text-green-400" />
-          <div className="text-center">
-            <p className="text-lg font-bold text-white leading-none">{stats.current_streak}</p>
-            <p className="text-[10px] text-white/70">dias estudando</p>
+        <div className="flex-1">
+          <div className="mb-1.5 flex items-center justify-between gap-3">
+            <span className="text-xs text-muted-foreground">Nível {level}</span>
+            <span className="font-mono text-xs font-semibold text-foreground">
+              {xp} / {nextXP} XP
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+            <motion.div
+              className="h-full rounded-full bg-primary"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPct}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            />
           </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-black/30 rounded-xl px-4 py-2.5">
-          <Zap className="w-5 h-5 text-yellow-400" />
-          <div className="text-center">
-            <p className="text-lg font-bold text-white leading-none">{stats.tasks_completed}</p>
-            <p className="text-[10px] text-white/70">tarefas feitas</p>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3.5 py-2.5">
+            <Flame className="h-4 w-4 text-accent" />
+            <div>
+              <p className="text-sm font-bold leading-none text-foreground">{stats.current_streak}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">dias seguidos</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3.5 py-2.5">
+            <CheckCircle2 className="h-4 w-4 text-primary" />
+            <div>
+              <p className="text-sm font-bold leading-none text-foreground">{stats.tasks_completed}</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">tarefas feitas</p>
+            </div>
           </div>
         </div>
       </div>

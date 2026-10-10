@@ -24,7 +24,7 @@ export default function PostFocusModal() {
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-center shadow-2xl"
           >
-            <h3 className="text-lg font-semibold text-foreground">Sessão concluída! 🎉</h3>
+            <h3 className="text-lg font-semibold text-foreground">Sessão concluída!</h3>
             <p className="mt-1 text-sm text-muted-foreground">Como você está se sentindo agora?</p>
             <div className="mt-5 flex justify-center">
               <EnergyPicker

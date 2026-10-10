@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 const MODE_COLORS = {
   focus: "text-primary",
   shortBreak: "text-accent",
-  longBreak: "text-pink-400",
+  longBreak: "text-[hsl(330_80%_60%)]",
 };
 
 const MODES = {
