@@ -1,3 +1,4 @@
+
 export interface StudyQuestion {
   subjectId: number;
   question: string;
@@ -6,7 +7,7 @@ export interface StudyQuestion {
 }
 
 export const STUDY_QUESTIONS: StudyQuestion[] = [
-  // Ciências
+  // ==================== CIÊNCIAS (17) ====================
   {
     subjectId: 17,
     question: "Qual é o processo pelo qual as plantas produzem seu próprio alimento?",
@@ -31,7 +32,108 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     correct: "Coração",
     incorrect: ["Pulmão", "Fígado", "Estômago"],
   },
-  // História
+  {
+    subjectId: 17,
+    question: "Qual gás as plantas absorvem durante a fotossíntese?",
+    correct: "Dióxido de carbono (CO₂)",
+    incorrect: ["Oxigênio (O₂)", "Nitrogênio (N₂)", "Hidrogênio (H₂)"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual é a unidade básica dos seres vivos?",
+    correct: "Célula",
+    incorrect: ["Tecido", "Órgão", "Molécula"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual sistema do corpo humano é responsável pelas trocas gasosas?",
+    correct: "Sistema respiratório",
+    incorrect: ["Sistema digestório", "Sistema nervoso", "Sistema urinário"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual é o principal componente do ar atmosférico?",
+    correct: "Nitrogênio",
+    incorrect: ["Oxigênio", "Gás carbônico", "Hidrogênio"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual órgão filtra o sangue e produz a urina?",
+    correct: "Rim",
+    incorrect: ["Fígado", "Pâncreas", "Baço"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual é a função principal dos glóbulos vermelhos?",
+    correct: "Transportar oxigênio",
+    incorrect: ["Produzir hormônios", "Digerir alimentos", "Produzir bile"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual molécula contém as informações genéticas dos seres vivos?",
+    correct: "DNA",
+    incorrect: ["Glicose", "Amido", "Colesterol"],
+  },
+  {
+    subjectId: 17,
+    question: "Como se chama a passagem da água do estado líquido para o gasoso?",
+    correct: "Vaporização",
+    incorrect: ["Condensação", "Solidificação", "Fusão"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual vitamina pode ser produzida pela pele com a participação da luz solar?",
+    correct: "Vitamina D",
+    incorrect: ["Vitamina C", "Vitamina B12", "Vitamina K"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual força atrai os corpos em direção à Terra?",
+    correct: "Gravidade",
+    incorrect: ["Magnetismo", "Atrito", "Eletricidade"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual é a principal fonte de energia para a Terra?",
+    correct: "Sol",
+    incorrect: ["Lua", "Vento", "Núcleo da Terra"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual estrutura celular controla a entrada e a saída de substâncias?",
+    correct: "Membrana plasmática",
+    incorrect: ["Ribossomo", "Nucléolo", "Centríolo"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual é o pH de uma solução neutra a aproximadamente 25 °C?",
+    correct: "7",
+    incorrect: ["1", "4", "14"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual mudança de estado transforma um sólido diretamente em gás?",
+    correct: "Sublimação",
+    incorrect: ["Fusão", "Condensação", "Solidificação"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual destes animais é um mamífero?",
+    correct: "Baleia",
+    incorrect: ["Tubarão", "Tartaruga", "Sardinha"],
+  },
+  {
+    subjectId: 17,
+    question: "Qual é a função dos decompositores em um ecossistema?",
+    correct: "Decompor matéria orgânica e reciclar nutrientes",
+    incorrect: [
+      "Produzir luz solar",
+      "Impedir toda a competição",
+      "Eliminar todos os predadores",
+    ],
+  },
+
+  // ==================== HISTÓRIA (23) ====================
   {
     subjectId: 23,
     question: "Em que ano foi proclamada a Independência do Brasil?",
@@ -56,7 +158,136 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     correct: "Escravidão",
     incorrect: ["Monarquia", "Censura", "Imigração"],
   },
-  // Geografia
+  {
+    subjectId: 23,
+    question: "Qual acontecimento marcou o início convencional da Revolução Francesa?",
+    correct: "Queda da Bastilha, em 1789",
+    incorrect: ["Congresso de Viena", "Revolução Russa", "Independência dos EUA"],
+  },
+  {
+    subjectId: 23,
+    question: "Quem foi o primeiro presidente do Brasil?",
+    correct: "Deodoro da Fonseca",
+    incorrect: ["Floriano Peixoto", "Getúlio Vargas", "Prudente de Morais"],
+  },
+  {
+    subjectId: 23,
+    question: "Qual regime político existia no Brasil antes da Proclamação da República?",
+    correct: "Monarquia",
+    incorrect: ["República parlamentarista", "Ditadura militar", "Socialismo"],
+  },
+  {
+    subjectId: 23,
+    question: "Em que ano terminou a Segunda Guerra Mundial?",
+    correct: "1945",
+    incorrect: ["1939", "1942", "1950"],
+  },
+  {
+    subjectId: 23,
+    question: "Qual foi uma característica central da Revolução Industrial?",
+    correct: "Expansão da produção mecanizada",
+    incorrect: [
+      "Fim do comércio internacional",
+      "Desaparecimento das cidades",
+      "Retorno geral ao trabalho artesanal",
+    ],
+  },
+  {
+    subjectId: 23,
+    question: "Qual povo desenvolveu a democracia na cidade de Atenas?",
+    correct: "Gregos antigos",
+    incorrect: ["Fenícios", "Persas", "Egípcios"],
+  },
+  {
+    subjectId: 23,
+    question: "Qual movimento defendia ideias como liberdade e igualdade durante o século XVIII?",
+    correct: "Iluminismo",
+    incorrect: ["Feudalismo", "Absolutismo", "Mercantilismo"],
+  },
+  {
+    subjectId: 23,
+    question: "Qual foi uma importante atividade econômica do Brasil colonial?",
+    correct: "Produção açucareira",
+    incorrect: [
+      "Indústria automobilística",
+      "Produção de semicondutores",
+      "Exploração de petróleo em larga escala",
+    ],
+  },
+  {
+    subjectId: 23,
+    question: "Quem liderou a Inconfidência Mineira e tornou-se seu símbolo mais conhecido?",
+    correct: "Tiradentes",
+    incorrect: ["Zumbi dos Palmares", "José Bonifácio", "Duque de Caxias"],
+  },
+  {
+    subjectId: 23,
+    question: "Qual foi o principal objetivo da criação da ONU em 1945?",
+    correct: "Promover a paz e a cooperação internacional",
+    incorrect: [
+      "Expandir o colonialismo",
+      "Criar uma moeda única mundial",
+      "Substituir todos os governos nacionais",
+    ],
+  },
+  {
+    subjectId: 23,
+    question: "Qual acontecimento desencadeou a crise internacional de julho de 1914?",
+    correct: "Assassinato do arquiduque Francisco Ferdinando",
+    incorrect: [
+      "Invasão da Polônia",
+      "Revolução Francesa",
+      "Queda do Muro de Berlim",
+    ],
+  },
+  {
+    subjectId: 23,
+    question: "Qual foi uma característica do Estado Novo de Getúlio Vargas?",
+    correct: "Autoritarismo e censura",
+    incorrect: [
+      "Ampla liberdade partidária sem restrições",
+      "Fim do poder central",
+      "Monarquia constitucional",
+    ],
+  },
+  {
+    subjectId: 23,
+    question: "Qual civilização antiga construiu o Coliseu?",
+    correct: "Romana",
+    incorrect: ["Maia", "Persa", "Chinesa"],
+  },
+  {
+    subjectId: 23,
+    question: "O que foi a Guerra Fria?",
+    correct: "Disputa política, econômica e ideológica entre EUA e URSS",
+    incorrect: [
+      "Guerra entre Brasil e Argentina",
+      "Conflito medieval europeu",
+      "Guerra entre Roma e Cartago",
+    ],
+  },
+  {
+    subjectId: 23,
+    question: "Qual documento inglês de 1215 limitou os poderes do rei?",
+    correct: "Magna Carta",
+    incorrect: [
+      "Declaração de Independência",
+      "Tratado de Versalhes",
+      "Código de Hamurábi",
+    ],
+  },
+  {
+    subjectId: 23,
+    question: "Qual foi uma consequência da abolição da escravidão no Brasil em 1888?",
+    correct: "Libertação legal sem garantia de igualdade social",
+    incorrect: [
+      "Distribuição de terras a todos os libertos",
+      "Fim imediato do racismo",
+      "Concessão automática de emprego a todos",
+    ],
+  },
+
+  // ==================== GEOGRAFIA (22) ====================
   {
     subjectId: 22,
     question: "Qual é a capital do Brasil?",
@@ -73,7 +304,11 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     subjectId: 22,
     question: "Qual linha imaginária divide a Terra em hemisférios Norte e Sul?",
     correct: "Linha do Equador",
-    incorrect: ["Trópico de Capricórnio", "Meridiano de Greenwich", "Trópico de Câncer"],
+    incorrect: [
+      "Trópico de Capricórnio",
+      "Meridiano de Greenwich",
+      "Trópico de Câncer",
+    ],
   },
   {
     subjectId: 22,
@@ -81,7 +316,124 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     correct: "América do Sul",
     incorrect: ["América Central", "Europa", "África"],
   },
-  // Matemática
+  {
+    subjectId: 22,
+    question: "Qual é o maior país do mundo em extensão territorial?",
+    correct: "Rússia",
+    incorrect: ["Canadá", "China", "Brasil"],
+  },
+  {
+    subjectId: 22,
+    question: "Qual bioma predomina em grande parte da região central do Brasil?",
+    correct: "Cerrado",
+    incorrect: ["Pampa", "Pantanal", "Mata de Araucárias"],
+  },
+  {
+    subjectId: 22,
+    question: "Como se chama o deslocamento de pessoas do campo para a cidade?",
+    correct: "Êxodo rural",
+    incorrect: ["Imigração sazonal", "Transumância", "Êxodo urbano"],
+  },
+  {
+    subjectId: 22,
+    question: "Qual linha imaginária corresponde à longitude de 0°?",
+    correct: "Meridiano de Greenwich",
+    incorrect: [
+      "Linha do Equador",
+      "Trópico de Câncer",
+      "Círculo Polar Ártico",
+    ],
+  },
+  {
+    subjectId: 22,
+    question: "Qual fenômeno é intensificado pelo aumento dos gases de efeito estufa?",
+    correct: "Aquecimento global",
+    incorrect: ["Resfriamento permanente da Terra", "Redução da gravidade", "Fim das estações"],
+  },
+  {
+    subjectId: 22,
+    question: "Qual é o clima predominante na Amazônia?",
+    correct: "Equatorial úmido",
+    incorrect: ["Polar", "Desértico frio", "Mediterrâneo"],
+  },
+  {
+    subjectId: 22,
+    question: "O que representa a escala de um mapa?",
+    correct: "A relação entre distâncias no mapa e distâncias reais",
+    incorrect: [
+      "A altitude máxima do território",
+      "A quantidade de habitantes",
+      "A temperatura média",
+    ],
+  },
+  {
+    subjectId: 22,
+    question: "Qual é uma característica da globalização?",
+    correct: "Maior integração entre economias, culturas e sociedades",
+    incorrect: [
+      "Fim das comunicações internacionais",
+      "Isolamento de todos os países",
+      "Extinção do comércio",
+    ],
+  },
+  {
+    subjectId: 22,
+    question: "Qual fenômeno pode ser causado pelo movimento das placas tectônicas?",
+    correct: "Terremotos",
+    incorrect: ["Eclipses solares", "Fases da Lua", "Auroras polares"],
+  },
+  {
+    subjectId: 22,
+    question: "Qual região brasileira possui nove estados?",
+    correct: "Nordeste",
+    incorrect: ["Sul", "Centro-Oeste", "Sudeste"],
+  },
+  {
+    subjectId: 22,
+    question: "O que é densidade demográfica?",
+    correct: "Número de habitantes por unidade de área",
+    incorrect: [
+      "Número total de nascimentos",
+      "Quantidade de cidades de um país",
+      "Taxa anual de exportação",
+    ],
+  },
+  {
+    subjectId: 22,
+    question: "Qual fonte de energia é renovável?",
+    correct: "Energia solar",
+    incorrect: ["Carvão mineral", "Petróleo", "Gás natural"],
+  },
+  {
+    subjectId: 22,
+    question: "Qual é uma função das matas ciliares?",
+    correct: "Proteger as margens dos rios e reduzir a erosão",
+    incorrect: [
+      "Aumentar o assoreamento",
+      "Impedir a infiltração da água",
+      "Elevar a salinidade dos rios",
+    ],
+  },
+  {
+    subjectId: 22,
+    question: "Como se chama o crescimento da população que vive nas cidades?",
+    correct: "Urbanização",
+    incorrect: ["Intemperismo", "Sedimentação", "Rochagem"],
+  },
+  {
+    subjectId: 22,
+    question: "Qual gás é emitido pela queima de combustíveis fósseis e contribui para o aquecimento global?",
+    correct: "Dióxido de carbono (CO₂)",
+    incorrect: ["Hélio", "Neônio", "Argônio"],
+  },
+  {
+    subjectId: 22,
+    question: "Qual região brasileira abriga a maior parte do Pantanal?",
+    correct: "Centro-Oeste",
+    incorrect: ["Sul", "Sudeste", "Nordeste"],
+  },
+
+  // ==================== MATEMÁTICA (19) ====================
   {
     subjectId: 19,
     question: "Quanto é 7 × 8?",
@@ -106,22 +458,123 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     correct: "180 graus",
     incorrect: ["90 graus", "270 graus", "360 graus"],
   },
-  // Literatura
+  {
+    subjectId: 19,
+    question: "Quanto é 25% de 400?",
+    correct: "100",
+    incorrect: ["25", "75", "125"],
+  },
+  {
+    subjectId: 19,
+    question: "Resolva: 3x + 5 = 20.",
+    correct: "x = 5",
+    incorrect: ["x = 3", "x = 10", "x = 15"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é a área de um retângulo de 8 cm por 5 cm?",
+    correct: "40 cm²",
+    incorrect: ["13 cm²", "26 cm²", "80 cm²"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é o valor de 2⁵?",
+    correct: "32",
+    incorrect: ["10", "16", "25"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é a média aritmética de 6, 8 e 10?",
+    correct: "8",
+    incorrect: ["6", "7", "9"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é o valor de 3/4 em porcentagem?",
+    correct: "75%",
+    incorrect: ["25%", "34%", "80%"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é o perímetro de um quadrado de lado 6 cm?",
+    correct: "24 cm",
+    incorrect: ["12 cm", "36 cm", "18 cm"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é a probabilidade de sair cara em uma moeda justa lançada uma vez?",
+    correct: "1/2",
+    incorrect: ["1/4", "1/3", "1"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é o valor de √144?",
+    correct: "12",
+    incorrect: ["10", "14", "24"],
+  },
+  {
+    subjectId: 19,
+    question: "Um produto custa R$ 80 e recebe desconto de 10%. Qual é o preço final?",
+    correct: "R$ 72",
+    incorrect: ["R$ 70", "R$ 74", "R$ 78"],
+  },
+  {
+    subjectId: 19,
+    question: "Resolva: 2x = 18.",
+    correct: "x = 9",
+    incorrect: ["x = 8", "x = 16", "x = 20"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é o volume de um cubo com arestas de 3 cm?",
+    correct: "27 cm³",
+    incorrect: ["9 cm³", "18 cm³", "36 cm³"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é o próximo número da sequência 2, 4, 8, 16, ...?",
+    correct: "32",
+    incorrect: ["20", "24", "30"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é a razão entre 2 e 5?",
+    correct: "2/5",
+    incorrect: ["5/2", "2/3", "5/7"],
+  },
+  {
+    subjectId: 19,
+    question: "Qual é a soma dos ângulos internos de um quadrilátero?",
+    correct: "360 graus",
+    incorrect: ["180 graus", "270 graus", "540 graus"],
+  },
+  {
+    subjectId: 19,
+    question: "Se 5 cadernos custam R$ 40, quanto custam 2 cadernos pelo mesmo preço unitário?",
+    correct: "R$ 16",
+    incorrect: ["R$ 8", "R$ 12", "R$ 20"],
+  },
+
+  // ==================== LITERATURA (10) ====================
   {
     subjectId: 10,
     question: "Quem escreveu o romance Dom Casmurro?",
     correct: "Machado de Assis",
-    incorrect: ["José de Alencar", "Carlos Drummond de Andrade", "Clarice Lispector"],
+    incorrect: [
+      "José de Alencar",
+      "Carlos Drummond de Andrade",
+      "Clarice Lispector",
+    ],
   },
   {
     subjectId: 10,
-    question: "Quantos versos normalmente formam um soneto?",
+    question: "Quantos versos normalmente formam um soneto tradicional?",
     correct: "14",
     incorrect: ["8", "10", "16"],
   },
   {
     subjectId: 10,
-    question: "Qual é o nome da personagem de Dom Casmurro conhecida por seus olhos de ressaca?",
+    question: "Qual personagem de Dom Casmurro é conhecida por seus olhos de ressaca?",
     correct: "Capitu",
     incorrect: ["Iracema", "Aurélia", "Macabéa"],
   },
@@ -129,9 +582,126 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     subjectId: 10,
     question: "Quem escreveu Os Lusíadas?",
     correct: "Luís de Camões",
-    incorrect: ["Fernando Pessoa", "Eça de Queirós", "Padre Antônio Vieira"],
+    incorrect: [
+      "Fernando Pessoa",
+      "Eça de Queirós",
+      "Padre Antônio Vieira",
+    ],
   },
-  // Informática
+  {
+    subjectId: 10,
+    question: "Qual obra de José de Alencar apresenta a personagem Iracema?",
+    correct: "Iracema",
+    incorrect: ["O Cortiço", "Vidas Secas", "Memórias Póstumas de Brás Cubas"],
+  },
+  {
+    subjectId: 10,
+    question: "Qual movimento literário brasileiro foi impulsionado pela Semana de Arte Moderna de 1922?",
+    correct: "Modernismo",
+    incorrect: ["Arcadismo", "Trovadorismo", "Barroco"],
+  },
+  {
+    subjectId: 10,
+    question: "Quem escreveu Vidas Secas?",
+    correct: "Graciliano Ramos",
+    incorrect: ["Machado de Assis", "Jorge Amado", "Aluísio Azevedo"],
+  },
+  {
+    subjectId: 10,
+    question: "Qual característica é associada ao Romantismo?",
+    correct: "Valorização da emoção e do subjetivismo",
+    incorrect: [
+      "Predomínio exclusivo da linguagem científica",
+      "Rejeição completa dos sentimentos",
+      "Imitação obrigatória da literatura medieval",
+    ],
+  },
+  {
+    subjectId: 10,
+    question: "Quem escreveu O Cortiço?",
+    correct: "Aluísio Azevedo",
+    incorrect: ["José de Alencar", "Lima Barreto", "Carlos Drummond de Andrade"],
+  },
+  {
+    subjectId: 10,
+    question: "Qual movimento literário brasileiro destacou a objetividade e a crítica social?",
+    correct: "Realismo",
+    incorrect: ["Trovadorismo", "Quinhentismo", "Arcadismo"],
+  },
+  {
+    subjectId: 10,
+    question: "Quem escreveu Grande Sertão: Veredas?",
+    correct: "João Guimarães Rosa",
+    incorrect: ["Graciliano Ramos", "Érico Veríssimo", "Castro Alves"],
+  },
+  {
+    subjectId: 10,
+    question: "O que é uma metáfora?",
+    correct: "Uma comparação implícita entre elementos",
+    incorrect: [
+      "Uma repetição de sons consonantais",
+      "Uma pergunta que exige resposta",
+      "Uma descrição exclusivamente literal",
+    ],
+  },
+  {
+    subjectId: 10,
+    question: "Qual autora escreveu A Hora da Estrela?",
+    correct: "Clarice Lispector",
+    incorrect: ["Cecília Meireles", "Rachel de Queiroz", "Lygia Fagundes Telles"],
+  },
+  {
+    subjectId: 10,
+    question: "Qual característica é marcante no Parnasianismo?",
+    correct: "Busca pela perfeição formal",
+    incorrect: [
+      "Versos obrigatoriamente sem métrica",
+      "Ausência total de rimas",
+      "Predomínio de narrativas científicas",
+    ],
+  },
+  {
+    subjectId: 10,
+    question: "Quem escreveu o poema Navio Negreiro?",
+    correct: "Castro Alves",
+    incorrect: ["Gonçalves Dias", "Álvares de Azevedo", "Olavo Bilac"],
+  },
+  {
+    subjectId: 10,
+    question: "Qual obra é um exemplo importante do Pré-Modernismo brasileiro?",
+    correct: "Os Sertões",
+    incorrect: ["Iracema", "O Guarani", "Marília de Dirceu"],
+  },
+  {
+    subjectId: 10,
+    question: "O que é uma onomatopeia?",
+    correct: "Palavra que imita um som",
+    incorrect: ["Exagero intencional", "Oposição de ideias", "Omissão de um termo"],
+  },
+  {
+    subjectId: 10,
+    question: "Qual gênero literário é tradicionalmente escrito para ser encenado?",
+    correct: "Dramático",
+    incorrect: ["Lírico", "Narrativo exclusivamente", "Ensaístico"],
+  },
+  {
+    subjectId: 10,
+    question: "Quem escreveu Macunaíma?",
+    correct: "Mário de Andrade",
+    incorrect: ["Oswald de Andrade", "Manuel Bandeira", "Monteiro Lobato"],
+  },
+  {
+    subjectId: 10,
+    question: "Qual é uma característica comum da crônica?",
+    correct: "Reflexão sobre situações cotidianas com linguagem acessível",
+    incorrect: [
+      "Apresentação exclusiva de fórmulas matemáticas",
+      "Registro exclusivo de leis oficiais",
+      "Descrição somente de fatos mitológicos",
+    ],
+  },
+
+  // ==================== INFORMÁTICA (18) ====================
   {
     subjectId: 18,
     question: "Qual linguagem é usada principalmente para estruturar páginas da web?",
@@ -156,7 +726,136 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     correct: "Binário",
     incorrect: ["Decimal", "Romano", "Hexadecimal"],
   },
-  // Arte
+  {
+    subjectId: 18,
+    question: "Qual linguagem é usada para estilizar páginas web?",
+    correct: "CSS",
+    incorrect: ["SQL", "HTML", "Bash"],
+  },
+  {
+    subjectId: 18,
+    question: "Qual linguagem é muito utilizada para adicionar interatividade a páginas web?",
+    correct: "JavaScript",
+    incorrect: ["HTML", "CSS", "XML"],
+  },
+  {
+    subjectId: 18,
+    question: "O que significa a sigla CPU?",
+    correct: "Unidade Central de Processamento",
+    incorrect: [
+      "Unidade de Controle de Rede",
+      "Programa Central do Usuário",
+      "Conexão Principal Universal",
+    ],
+  },
+  {
+    subjectId: 18,
+    question: "Qual é a função principal de um sistema operacional?",
+    correct: "Gerenciar recursos do computador e executar aplicações",
+    incorrect: [
+      "Aumentar fisicamente a memória RAM",
+      "Substituir todos os programas",
+      "Impedir qualquer conexão de rede",
+    ],
+  },
+  {
+    subjectId: 18,
+    question: "Qual destes é um banco de dados relacional?",
+    correct: "PostgreSQL",
+    incorrect: ["Photoshop", "PowerPoint", "Bluetooth"],
+  },
+  {
+    subjectId: 18,
+    question: "Para que serve o Git?",
+    correct: "Controlar versões de arquivos e código",
+    incorrect: [
+      "Editar exclusivamente imagens",
+      "Aumentar a velocidade física do processador",
+      "Criar conexões elétricas",
+    ],
+  },
+  {
+    subjectId: 18,
+    question: "O que é phishing?",
+    correct: "Uma tentativa de obter dados por meio de fraude",
+    incorrect: [
+      "Um tipo de memória RAM",
+      "Uma linguagem de programação",
+      "Um método de compactação de arquivos",
+    ],
+  },
+  {
+    subjectId: 18,
+    question: "Qual componente armazena temporariamente dados usados pelos programas em execução?",
+    correct: "Memória RAM",
+    incorrect: ["SSD exclusivamente", "Fonte de alimentação", "Placa de som"],
+  },
+  {
+    subjectId: 18,
+    question: "Qual é a função de uma chave primária em um banco de dados?",
+    correct: "Identificar unicamente cada registro",
+    incorrect: [
+      "Formatar o monitor",
+      "Criptografar automaticamente toda a internet",
+      "Ordenar apenas imagens",
+    ],
+  },
+  {
+    subjectId: 18,
+    question: "Qual protocolo permite acessar páginas web de forma segura?",
+    correct: "HTTPS",
+    incorrect: ["FTP sem criptografia", "SMTP exclusivamente", "Telnet"],
+  },
+  {
+    subjectId: 18,
+    question: "O que é um algoritmo?",
+    correct: "Uma sequência definida de passos para resolver um problema",
+    incorrect: [
+      "Um componente físico obrigatório",
+      "Um tipo de monitor",
+      "Uma conexão de energia",
+    ],
+  },
+  {
+    subjectId: 18,
+    question: "Qual estrutura de programação permite executar instruções conforme uma condição?",
+    correct: "Condicional",
+    incorrect: ["Comentário", "Importação de imagem", "Arquivo compactado"],
+  },
+  {
+    subjectId: 18,
+    question: "Qual comando SQL é usado para consultar dados de uma tabela?",
+    correct: "SELECT",
+    incorrect: ["DELETE", "DROP", "UPDATE"],
+  },
+  {
+    subjectId: 18,
+    question: "O que significa fazer backup?",
+    correct: "Criar uma cópia de segurança dos dados",
+    incorrect: [
+      "Apagar todos os arquivos",
+      "Desligar a internet",
+      "Alterar a resolução da tela",
+    ],
+  },
+  {
+    subjectId: 18,
+    question: "Qual é a finalidade de uma API?",
+    correct: "Permitir a comunicação entre sistemas de software",
+    incorrect: [
+      "Substituir o sistema operacional",
+      "Resfriar o processador",
+      "Armazenar energia elétrica",
+    ],
+  },
+  {
+    subjectId: 18,
+    question: "Em programação, o que é uma variável?",
+    correct: "Um espaço identificado usado para armazenar um valor",
+    incorrect: ["Um cabo de rede", "Um tipo de teclado", "Um protocolo de impressão"],
+  },
+
+  // ==================== ARTE (25) ====================
   {
     subjectId: 25,
     question: "Quem pintou a obra Mona Lisa?",
@@ -167,7 +866,11 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     subjectId: 25,
     question: "Quais são as três cores primárias na pintura tradicional?",
     correct: "Vermelho, amarelo e azul",
-    incorrect: ["Verde, laranja e roxo", "Preto, branco e cinza", "Rosa, marrom e azul"],
+    incorrect: [
+      "Verde, laranja e roxo",
+      "Preto, branco e cinza",
+      "Rosa, marrom e azul",
+    ],
   },
   {
     subjectId: 25,
@@ -179,9 +882,134 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
     subjectId: 25,
     question: "O que é uma escultura?",
     correct: "Uma obra artística tridimensional",
-    incorrect: ["Uma pintura feita em papel", "Uma música instrumental", "Um texto teatral"],
+    incorrect: [
+      "Uma pintura feita em papel",
+      "Uma música instrumental",
+      "Um texto teatral",
+    ],
   },
-  // Esportes
+  {
+    subjectId: 25,
+    question: "Qual movimento artístico é associado a Claude Monet?",
+    correct: "Impressionismo",
+    incorrect: ["Cubismo", "Surrealismo", "Futurismo"],
+  },
+  {
+    subjectId: 25,
+    question: "Qual artista pintou Guernica?",
+    correct: "Pablo Picasso",
+    incorrect: ["Salvador Dalí", "Claude Monet", "Tarsila do Amaral"],
+  },
+  {
+    subjectId: 25,
+    question: "Qual artista brasileira pintou Abaporu?",
+    correct: "Tarsila do Amaral",
+    incorrect: ["Anita Malfatti", "Lygia Clark", "Djanira"],
+  },
+  {
+    subjectId: 25,
+    question: "Qual movimento artístico valorizava sonhos e o inconsciente?",
+    correct: "Surrealismo",
+    incorrect: ["Neoclassicismo", "Realismo", "Impressionismo"],
+  },
+  {
+    subjectId: 25,
+    question: "Qual é uma característica da arte barroca?",
+    correct: "Dramaticidade e contrastes intensos",
+    incorrect: [
+      "Ausência completa de ornamentação em todas as obras",
+      "Uso exclusivo de formas geométricas simples",
+      "Rejeição de qualquer tema religioso",
+    ],
+  },
+  {
+    subjectId: 25,
+    question: "Qual manifestação cultural brasileira combina música, dança e luta?",
+    correct: "Capoeira",
+    incorrect: ["Ópera", "Balé clássico exclusivamente", "Valsa europeia"],
+  },
+  {
+    subjectId: 25,
+    question: "Qual instrumento musical possui teclas, cordas e martelos?",
+    correct: "Piano",
+    incorrect: ["Flauta", "Trompete", "Pandeiro"],
+  },
+  {
+    subjectId: 25,
+    question: "O que é uma instalação artística?",
+    correct: "Uma obra organizada em um espaço para criar uma experiência",
+    incorrect: [
+      "Uma técnica exclusiva de pintura a óleo",
+      "Uma partitura musical",
+      "Um estilo de poesia medieval",
+    ],
+  },
+  {
+    subjectId: 25,
+    question: "Qual foi uma proposta da Semana de Arte Moderna de 1922?",
+    correct: "Renovar a arte brasileira e romper com padrões tradicionais",
+    incorrect: [
+      "Proibir manifestações artísticas populares",
+      "Retomar obrigatoriamente o estilo medieval",
+      "Eliminar a literatura brasileira",
+    ],
+  },
+  {
+    subjectId: 25,
+    question: "Qual elemento visual representa a variação entre claro e escuro?",
+    correct: "Valor tonal",
+    incorrect: ["Ritmo musical", "Timbre", "Perspectiva sonora"],
+  },
+  {
+    subjectId: 25,
+    question: "Qual técnica utiliza pequenas peças para formar imagens?",
+    correct: "Mosaico",
+    incorrect: ["Aquarela", "Modelagem em torno", "Fotografia"],
+  },
+  {
+    subjectId: 25,
+    question: "O que caracteriza o cubismo?",
+    correct: "Representação de formas geométricas e múltiplos pontos de vista",
+    incorrect: [
+      "Reprodução fotográfica obrigatória",
+      "Uso exclusivo de paisagens naturais",
+      "Ausência de formas geométricas",
+    ],
+  },
+  {
+    subjectId: 25,
+    question: "Qual manifestação artística utiliza o corpo e o movimento como elementos centrais?",
+    correct: "Dança",
+    incorrect: ["Escultura exclusivamente", "Arquitetura", "Gravura"],
+  },
+  {
+    subjectId: 25,
+    question: "Qual é a principal função da perspectiva linear no desenho?",
+    correct: "Criar a ilusão de profundidade",
+    incorrect: [
+      "Reproduzir sons",
+      "Misturar pigmentos automaticamente",
+      "Definir a velocidade de uma música",
+    ],
+  },
+  {
+    subjectId: 25,
+    question: "Qual artista é conhecido por A Persistência da Memória?",
+    correct: "Salvador Dalí",
+    incorrect: ["Edvard Munch", "Michelangelo", "Andy Warhol"],
+  },
+  {
+    subjectId: 25,
+    question: "O que é patrimônio cultural imaterial?",
+    correct: "Saberes, celebrações e práticas culturais transmitidos entre gerações",
+    incorrect: [
+      "Somente prédios históricos",
+      "Apenas pinturas expostas em museus",
+      "Exclusivamente objetos arqueológicos",
+    ],
+  },
+
+  // ==================== ESPORTES (21) ====================
   {
     subjectId: 21,
     question: "Quantos jogadores de cada equipe começam uma partida de futebol em campo?",
@@ -202,8 +1030,116 @@ export const STUDY_QUESTIONS: StudyQuestion[] = [
   },
   {
     subjectId: 21,
-    question: "Qual esporte é conhecido como o esporte da bola oval?",
+    question: "Qual esporte é conhecido por utilizar uma bola oval?",
     correct: "Rugby",
     incorrect: ["Tênis", "Vôlei", "Natação"],
+  },
+  {
+    subjectId: 21,
+    question: "Quantos pontos vale um arremesso convertido de fora da linha de três no basquete?",
+    correct: "3 pontos",
+    incorrect: ["1 ponto", "2 pontos", "4 pontos"],
+  },
+  {
+    subjectId: 21,
+    question: "Quantos jogadores de cada equipe ficam em quadra no voleibol?",
+    correct: "6",
+    incorrect: ["5", "7", "11"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual é a duração regulamentar de uma partida de futebol, sem acréscimos?",
+    correct: "90 minutos",
+    incorrect: ["60 minutos", "80 minutos", "100 minutos"],
+  },
+  {
+    subjectId: 21,
+    question: "Em qual esporte é utilizada a expressão 'xeque-mate'?",
+    correct: "Xadrez",
+    incorrect: ["Tênis", "Handebol", "Atletismo"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual é a distância oficial de uma maratona?",
+    correct: "42,195 km",
+    incorrect: ["21,097 km", "40 km", "50 km"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual cartão indica expulsão no futebol?",
+    correct: "Vermelho",
+    incorrect: ["Azul", "Verde", "Branco"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual é o principal objetivo do aquecimento antes de uma atividade física?",
+    correct: "Preparar gradualmente o corpo para o esforço",
+    incorrect: [
+      "Eliminar a necessidade de hidratação",
+      "Garantir que nunca ocorram lesões",
+      "Substituir todo o treinamento",
+    ],
+  },
+  {
+    subjectId: 21,
+    question: "Qual esporte é disputado com raquete e uma bola sobre uma rede?",
+    correct: "Tênis",
+    incorrect: ["Natação", "Boxe", "Ciclismo"],
+  },
+  {
+    subjectId: 21,
+    question: "Quantos jogadores de cada equipe atuam em quadra no handebol, incluindo o goleiro?",
+    correct: "7",
+    incorrect: ["5", "6", "11"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual capacidade física está relacionada à realização de movimentos em pouco tempo?",
+    correct: "Velocidade",
+    incorrect: ["Flexibilidade", "Equilíbrio estático", "Composição corporal"],
+  },
+  {
+    subjectId: 21,
+    question: "Em qual modalidade se utiliza uma prancha para deslizar sobre ondas?",
+    correct: "Surfe",
+    incorrect: ["Esgrima", "Halterofilismo", "Ginástica artística"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual país sediou os Jogos Olímpicos de 2016?",
+    correct: "Brasil",
+    incorrect: ["China", "Reino Unido", "Japão"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual é o objetivo principal do treinamento de resistência aeróbica?",
+    correct: "Melhorar a capacidade de sustentar esforços por mais tempo",
+    incorrect: [
+      "Aumentar exclusivamente a flexibilidade",
+      "Eliminar a necessidade de descanso",
+      "Treinar apenas movimentos explosivos",
+    ],
+  },
+  {
+    subjectId: 21,
+    question: "Qual esporte utiliza raquete e peteca?",
+    correct: "Badminton",
+    incorrect: ["Beisebol", "Rugby", "Polo aquático"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual fundamento do voleibol inicia cada jogada?",
+    correct: "Saque",
+    incorrect: ["Bloqueio", "Cortada", "Manchete"],
+  },
+  {
+    subjectId: 21,
+    question: "Qual atitude representa o espírito esportivo?",
+    correct: "Respeitar adversários, árbitros e regras",
+    incorrect: [
+      "Desrespeitar decisões para obter vantagem",
+      "Impedir a participação dos iniciantes",
+      "Ignorar todas as regras",
+    ],
   },
 ];
