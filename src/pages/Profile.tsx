@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, Flame, CheckCircle2, Timer, Star, Trophy, Lock,
-  Pencil, LogOut, Calendar, Share2, X
+  Pencil, LogOut, Calendar, Share2, X, Palette, Award
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -13,21 +13,37 @@ import { cn } from "@/lib/utils";
 import HeroBanner from "@/components/layout/HeroBanner";
 import UserAvatar from "@/components/ui/UserAvatar";
 
+// Mesma cor sempre significa a mesma coisa no BRIO inteiro — então os temas
+// ciclam pelos 5 tons já definidos no design system (--chart-1..5), em vez de
+// cada um inventar um gradiente novo.
+const PALETTE_TOKENS = [
+  "hsl(250 85% 65%)",
+  "hsl(175 80% 50%)",
+  "hsl(45 90% 60%)",
+  "hsl(330 80% 60%)",
+  "hsl(200 80% 55%)",
+];
+
 const THEMES = [
-  { id: "brio2026_especial", label: "BRIO 2026 Especial", minLevel: 0, gradient: "from-cyan-400 via-blue-500 to-purple-600", emoji: "⚡", tag: "2026" },
-  { id: "brio2026", label: "BRIO 2026", minLevel: 0, gradient: "from-blue-600 via-indigo-500 to-violet-600", emoji: "🚀", tag: "2026" },
-  { id: "brio_classic", label: "Plataforma BRIO", minLevel: 0, gradient: "from-indigo-500 to-blue-500", emoji: "🎯", tag: null },
-  { id: "madeira", label: "Madeira", minLevel: 0, gradient: "from-amber-700 to-yellow-600", emoji: "🪵", tag: null },
-  { id: "alvo", label: "Alvo", minLevel: 5, gradient: "from-teal-400 to-cyan-500", emoji: "🎯", tag: "Nível 5" },
-  { id: "aviao", label: "Avião", minLevel: 10, gradient: "from-sky-400 via-blue-400 to-indigo-500", emoji: "✈️", tag: "Nível 10" },
-  { id: "fogo", label: "Fogo", minLevel: 15, gradient: "from-orange-600 via-red-500 to-yellow-400", emoji: "🔥", tag: "Nível 15" },
-  { id: "gladiador", label: "Gladiador", minLevel: 20, gradient: "from-stone-600 via-gray-500 to-stone-400", emoji: "⚔️", tag: "Nível 20" },
-  { id: "hoverboard", label: "Hoverboard", minLevel: 25, gradient: "from-pink-500 via-fuchsia-500 to-purple-600", emoji: "🛹", tag: "Nível 25" },
-  { id: "foguete", label: "Foguete", minLevel: 30, gradient: "from-slate-700 via-slate-600 to-slate-500", emoji: "🚀", tag: "Nível 30" },
+  { id: "brio2026_especial", label: "BRIO 2026 Especial", minLevel: 0, tag: "2026" },
+  { id: "brio2026", label: "BRIO 2026", minLevel: 0, tag: "2026" },
+  { id: "brio_classic", label: "Plataforma BRIO", minLevel: 0, tag: null },
+  { id: "madeira", label: "Madeira", minLevel: 0, tag: null },
+  { id: "alvo", label: "Alvo", minLevel: 5, tag: "Nível 5" },
+  { id: "aviao", label: "Avião", minLevel: 10, tag: "Nível 10" },
+  { id: "fogo", label: "Fogo", minLevel: 15, tag: "Nível 15" },
+  { id: "gladiador", label: "Gladiador", minLevel: 20, tag: "Nível 20" },
+  { id: "hoverboard", label: "Hoverboard", minLevel: 25, tag: "Nível 25" },
+  { id: "foguete", label: "Foguete", minLevel: 30, tag: "Nível 30" },
 ];
 
 const TABS = ["Temas", "Conquistas", "Divisões"] as const;
 type TabType = typeof TABS[number];
+const TAB_ICONS: Record<TabType, typeof Palette> = {
+  Temas: Palette,
+  Conquistas: Trophy,
+  Divisões: Award,
+};
 
 const ACHIEVEMENTS = [
   { key: "first_task", title: "Primeiro Passo", desc: "Complete 1 tarefa", icon: CheckCircle2, type: "tasks_completed", value: 1, xp: 20 },
@@ -41,11 +57,11 @@ const ACHIEVEMENTS = [
 ];
 
 const DIVISIONS = [
-  { label: "Bronze", minLevel: 0, gradient: "from-amber-700 to-amber-500", emoji: "🥉" },
-  { label: "Prata", minLevel: 5, gradient: "from-slate-400 to-slate-300", emoji: "🥈" },
-  { label: "Ouro", minLevel: 10, gradient: "from-yellow-500 to-yellow-300", emoji: "🥇" },
-  { label: "Platina", minLevel: 20, gradient: "from-cyan-400 to-teal-300", emoji: "💎" },
-  { label: "Diamante", minLevel: 30, gradient: "from-blue-400 to-indigo-400", emoji: "💠" },
+  { label: "Bronze", minLevel: 0, color: "hsl(45 90% 60%)" },
+  { label: "Prata", minLevel: 5, color: "hsl(var(--muted-foreground))" },
+  { label: "Ouro", minLevel: 10, color: "hsl(45 90% 60%)" },
+  { label: "Platina", minLevel: 20, color: "hsl(175 80% 50%)" },
+  { label: "Diamante", minLevel: 30, color: "hsl(250 85% 65%)" },
 ];
 
 export default function Profile() {
@@ -132,23 +148,24 @@ export default function Profile() {
 
       <div className="bg-card border border-border rounded-2xl p-5">
         <div className="flex gap-2 mb-5 flex-wrap">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-all",
-                activeTab === tab
-                  ? "bg-primary text-white"
-                  : "bg-secondary text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {tab === "Temas" && "🎨 "}
-              {tab === "Conquistas" && "🏆 "}
-              {tab === "Divisões" && "🥇 "}
-              {tab}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const Icon = TAB_ICONS[tab];
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all",
+                  activeTab === tab
+                    ? "bg-primary text-white"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {tab}
+              </button>
+            );
+          })}
         </div>
 
         {activeTab === "Temas" && (
@@ -156,6 +173,7 @@ export default function Profile() {
             {THEMES.map((theme, i) => {
               const locked = level < theme.minLevel;
               const selected = selectedTheme === theme.id;
+              const color = PALETTE_TOKENS[i % PALETTE_TOKENS.length];
               return (
                 <motion.div
                   key={theme.id}
@@ -164,30 +182,26 @@ export default function Profile() {
                   transition={{ delay: i * 0.04 }}
                   onClick={() => !locked && setSelectedTheme(theme.id)}
                   className={cn(
-                    "relative rounded-xl overflow-hidden cursor-pointer aspect-video border-2 transition-all",
-                    locked ? "opacity-50 cursor-not-allowed" : "hover:scale-[1.02]",
-                    selected ? "border-primary ring-2 ring-primary/40" : "border-transparent"
+                    "relative rounded-xl border p-3 transition-colors",
+                    locked ? "opacity-50 cursor-not-allowed border-border" : "cursor-pointer border-border hover:border-primary/40",
+                    selected && "border-primary ring-1 ring-primary/40"
                   )}
                 >
-                  <div className={`w-full h-full bg-gradient-to-br ${theme.gradient} flex items-end p-2`}>
-                    <div className="flex flex-col">
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="h-8 w-8 rounded-lg shrink-0"
+                      style={{ backgroundColor: color }}
+                      aria-hidden="true"
+                    />
+                    <div className="min-w-0 flex-1 pr-4">
+                      <p className="text-sm font-semibold text-foreground truncate">{theme.label}</p>
                       {theme.tag && (
-                        <span className="text-[10px] text-white/80 font-bold uppercase tracking-wide">{theme.tag}</span>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{theme.tag}</p>
                       )}
-                      <span className="text-sm font-bold text-white drop-shadow">{theme.label}</span>
                     </div>
-                    <span className="absolute top-2 right-2 text-xl">{theme.emoji}</span>
                   </div>
-                  {locked && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <Lock className="w-5 h-5 text-white/80" />
-                    </div>
-                  )}
-                  {selected && (
-                    <div className="absolute top-2 left-2">
-                      <CheckCircle2 className="w-4 h-4 text-white drop-shadow" />
-                    </div>
-                  )}
+                  {locked && <Lock className="absolute top-3 right-3 h-3.5 w-3.5 text-muted-foreground" />}
+                  {selected && <CheckCircle2 className="absolute top-3 right-3 h-4 w-4 text-primary" />}
                 </motion.div>
               );
             })}
@@ -232,18 +246,16 @@ export default function Profile() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
                   className={cn(
-                    "rounded-xl overflow-hidden border-2",
-                    unlocked ? "border-primary/30" : "border-transparent opacity-50"
+                    "rounded-xl border p-4 text-center transition-colors",
+                    unlocked ? "border-primary/30 bg-secondary/30" : "border-border opacity-50"
                   )}
                 >
-                  <div className={`bg-gradient-to-br ${div.gradient} p-4 text-center`}>
-                    <span className="text-3xl">{div.emoji}</span>
-                  </div>
-                  <div className="bg-card p-2 text-center">
-                    <p className="text-sm font-bold text-foreground">{div.label}</p>
-                    <p className="text-[10px] text-muted-foreground">Nível {div.minLevel}+</p>
-                    {unlocked && <CheckCircle2 className="w-3.5 h-3.5 text-primary mx-auto mt-1" />}
-                  </div>
+                  <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: div.color }} />
+                  </span>
+                  <p className="mt-2.5 text-sm font-bold text-foreground">{div.label}</p>
+                  <p className="text-[10px] text-muted-foreground">Nível {div.minLevel}+</p>
+                  {unlocked && <CheckCircle2 className="w-3.5 h-3.5 text-primary mx-auto mt-1.5" />}
                 </motion.div>
               );
             })}
@@ -277,10 +289,10 @@ export default function Profile() {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-sm"
             >
-              <div className={`rounded-3xl overflow-hidden bg-gradient-to-br ${currentDivision.gradient} p-6 relative`}>
+              <div className="rounded-3xl overflow-hidden bg-[hsl(230_30%_5%)] border border-border p-6 relative">
                 <button
                   onClick={() => setShowCard(false)}
-                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/20 hover:bg-black/30 flex items-center justify-center text-white transition-colors"
+                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/10 hover:bg-white/15 flex items-center justify-center text-white transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -291,42 +303,43 @@ export default function Profile() {
                     color={user?.avatarColor}
                     name={user?.name}
                     size={56}
-                    className="shadow-lg border-2 border-white/30 text-lg"
+                    className="shadow-lg border-2 border-white/10 text-lg"
                   />
                   <div>
                     <p className="font-heading font-bold text-white text-lg leading-tight">{user?.name}</p>
-                    <p className="text-white/80 text-xs flex items-center gap-1">
-                      {currentDivision.emoji} Divisão {currentDivision.label}
+                    <p className="text-white/70 text-xs flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: currentDivision.color }} />
+                      Divisão {currentDivision.label}
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 mb-5">
-                  <div className="bg-black/20 rounded-xl p-2.5 text-center">
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-center">
                     <p className="text-white font-heading font-bold text-lg">{level}</p>
-                    <p className="text-white/70 text-[10px] mt-0.5">Nível</p>
+                    <p className="text-white/60 text-[10px] mt-0.5">Nível</p>
                   </div>
-                  <div className="bg-black/20 rounded-xl p-2.5 text-center">
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-center">
                     <p className="text-white font-heading font-bold text-lg">{stats.total_xp}</p>
-                    <p className="text-white/70 text-[10px] mt-0.5">XP total</p>
+                    <p className="text-white/60 text-[10px] mt-0.5">XP total</p>
                   </div>
-                  <div className="bg-black/20 rounded-xl p-2.5 text-center">
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-2.5 text-center">
                     <p className="text-white font-heading font-bold text-lg">{stats.current_streak}</p>
-                    <p className="text-white/70 text-[10px] mt-0.5">Streak</p>
+                    <p className="text-white/60 text-[10px] mt-0.5">Streak</p>
                   </div>
                 </div>
 
                 {latestAchievement && (
-                  <div className="bg-black/20 rounded-xl p-3 flex items-center gap-2.5">
-                    <latestAchievement.icon className="w-5 h-5 text-white shrink-0" />
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center gap-2.5">
+                    <latestAchievement.icon className="w-5 h-5 text-primary shrink-0" />
                     <div>
                       <p className="text-white text-xs font-semibold">{latestAchievement.title}</p>
-                      <p className="text-white/70 text-[10px]">Conquista mais recente</p>
+                      <p className="text-white/60 text-[10px]">Conquista mais recente</p>
                     </div>
                   </div>
                 )}
 
-                <p className="text-center text-white/60 text-[10px] mt-5">BRIO — Foco, disciplina e constância</p>
+                <p className="text-center text-white/50 text-[10px] mt-5">BRIO — Foco, disciplina e constância</p>
               </div>
 
               <p className="text-center text-xs text-muted-foreground mt-3">
