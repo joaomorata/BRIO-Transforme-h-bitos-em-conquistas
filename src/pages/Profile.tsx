@@ -100,25 +100,25 @@ export default function Profile() {
     <div>
       <HeroBanner stats={stats} />
 
-      <div className="flex items-center gap-3 mb-6">
-        <UserAvatar url={user?.avatarUrl} color={user?.avatarColor} name={user?.name} size={56} className="shadow-lg text-xl" />
-        <div className="flex-1 min-w-0">
-          <h2 className="text-lg font-heading font-bold text-foreground truncate">{user?.name}</h2>
+      <div className="flex items-center justify-between gap-3 mb-6">
+        <div className="min-w-0">
           <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
           {user?.bio && <p className="text-xs text-muted-foreground mt-0.5 truncate">{user.bio}</p>}
         </div>
-        <button
-          onClick={() => setShowCard(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Share2 className="w-3.5 h-3.5" /> Cartão
-        </button>
-        <Link
-          to="/profile/edit"
-          className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Pencil className="w-3.5 h-3.5" /> Editar
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setShowCard(true)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Share2 className="w-3.5 h-3.5" /> Cartão
+          </button>
+          <Link
+            to="/profile/edit"
+            className="flex items-center gap-1.5 px-3 py-2 bg-card border border-border rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Pencil className="w-3.5 h-3.5" /> Editar
+          </Link>
+        </div>
       </div>
 
       <div className="bg-card border border-border rounded-2xl p-5 mb-6">
