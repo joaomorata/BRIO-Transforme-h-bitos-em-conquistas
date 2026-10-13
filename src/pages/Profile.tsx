@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap, Flame, CheckCircle2, Timer, Star, Trophy, Lock,
-  Pencil, LogOut, Calendar, Share2, X, Palette, Award
+  Pencil, LogOut, Calendar, Share2, X, Palette, Award, Loader2, AlertCircle
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -66,12 +66,24 @@ const DIVISIONS = [
 
 export default function Profile() {
   const { stats, tasks } = useApp();
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("Temas");
-  const [selectedTheme, setSelectedTheme] = useState("brio_classic");
+  const [savingTheme, setSavingTheme] = useState<string | null>(null);
+  const [themeError, setThemeError] = useState("");
   const [showCard, setShowCard] = useState(false);
   const level = calculateLevel(stats.total_xp);
+
+  const handleSelectTheme = async (themeId: string, color: string) => {
+    if (savingTheme) return;
+    setThemeError("");
+    setSavingTheme(themeId);
+    const result = await updateProfile({ avatarColor: color });
+    setSavingTheme(null);
+    if (!result.success) {
+      setThemeError(result.error || "Não foi possível aplicar o tema.");
+    }
+  };
 
   const isUnlocked = (ach: typeof ACHIEVEMENTS[number]) => {
     switch (ach.type) {
@@ -173,42 +185,55 @@ export default function Profile() {
         </div>
 
         {activeTab === "Temas" && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {THEMES.map((theme, i) => {
-              const locked = level < theme.minLevel;
-              const selected = selectedTheme === theme.id;
-              const color = PALETTE_TOKENS[i % PALETTE_TOKENS.length];
-              return (
-                <motion.div
-                  key={theme.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  onClick={() => !locked && setSelectedTheme(theme.id)}
-                  className={cn(
-                    "relative rounded-xl border p-3 transition-colors",
-                    locked ? "opacity-50 cursor-not-allowed border-border" : "cursor-pointer border-border hover:border-primary/40",
-                    selected && "border-primary ring-1 ring-primary/40"
-                  )}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className="h-8 w-8 rounded-lg shrink-0"
-                      style={{ backgroundColor: color }}
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0 flex-1 pr-4">
-                      <p className="text-sm font-semibold text-foreground truncate">{theme.label}</p>
-                      {theme.tag && (
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{theme.tag}</p>
-                      )}
+          <div>
+            {themeError && (
+              <div className="flex items-center gap-2 text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-3 py-2.5 mb-3">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <p className="text-sm">{themeError}</p>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mb-3">
+              Escolha a cor do seu avatar — ela aparece no seu perfil, no ranking e para outros usuários.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {THEMES.map((theme, i) => {
+                const locked = level < theme.minLevel;
+                const color = PALETTE_TOKENS[i % PALETTE_TOKENS.length];
+                const selected = (user?.avatarColor || "").toLowerCase() === color.toLowerCase();
+                const saving = savingTheme === theme.id;
+                return (
+                  <motion.div
+                    key={theme.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    onClick={() => !locked && handleSelectTheme(theme.id, color)}
+                    className={cn(
+                      "relative rounded-xl border p-3 transition-colors",
+                      locked ? "opacity-50 cursor-not-allowed border-border" : "cursor-pointer border-border hover:border-primary/40",
+                      selected && "border-primary ring-1 ring-primary/40"
+                    )}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className="h-8 w-8 rounded-lg shrink-0"
+                        style={{ backgroundColor: color }}
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1 pr-4">
+                        <p className="text-sm font-semibold text-foreground truncate">{theme.label}</p>
+                        {theme.tag && (
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{theme.tag}</p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  {locked && <Lock className="absolute top-3 right-3 h-3.5 w-3.5 text-muted-foreground" />}
-                  {selected && <CheckCircle2 className="absolute top-3 right-3 h-4 w-4 text-primary" />}
-                </motion.div>
-              );
-            })}
+                    {locked && <Lock className="absolute top-3 right-3 h-3.5 w-3.5 text-muted-foreground" />}
+                    {saving && <Loader2 className="absolute top-3 right-3 h-4 w-4 text-primary animate-spin" />}
+                    {!saving && selected && <CheckCircle2 className="absolute top-3 right-3 h-4 w-4 text-primary" />}
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         )}
 
