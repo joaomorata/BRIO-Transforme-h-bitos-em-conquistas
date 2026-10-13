@@ -4,9 +4,9 @@ import type { UserStats } from "@/context/AppContext";
 
 const statCards = [
   { key: "total_xp" as const, label: "XP Total", icon: Zap, colorText: "text-primary", colorBg: "bg-primary/10" },
-  { key: "current_streak" as const, label: "Streak Atual", icon: Flame, colorText: "text-orange-400", colorBg: "bg-orange-400/10" },
+  { key: "current_streak" as const, label: "Streak Atual", icon: Flame, colorText: "text-[hsl(45_90%_60%)]", colorBg: "bg-[hsl(45_90%_60%/0.1)]" },
   { key: "tasks_completed" as const, label: "Tarefas Feitas", icon: CheckCircle2, colorText: "text-accent", colorBg: "bg-accent/10" },
-  { key: "pomodoros_completed" as const, label: "Pomodoros", icon: Timer, colorText: "text-pink-400", colorBg: "bg-pink-400/10" },
+  { key: "pomodoros_completed" as const, label: "Pomodoros", icon: Timer, colorText: "text-[hsl(330_80%_60%)]", colorBg: "bg-[hsl(330_80%_60%/0.1)]" },
 ];
 
 export default function StatsGrid({ stats }: { stats: UserStats }) {

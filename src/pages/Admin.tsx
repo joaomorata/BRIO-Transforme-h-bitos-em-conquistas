@@ -50,8 +50,8 @@ export default function Admin() {
   const summaryCards = [
     { icon: Users, label: "Usuários cadastrados", value: users.length, colorText: "text-primary", colorBg: "bg-primary/10" },
     { icon: CheckCircle2, label: "Tarefas concluídas", value: completedTasks, colorText: "text-accent", colorBg: "bg-accent/10" },
-    { icon: Zap, label: "XP Total gerado", value: stats.total_xp, colorText: "text-yellow-400", colorBg: "bg-yellow-400/10" },
-    { icon: Timer, label: "Pomodoros totais", value: stats.pomodoros_completed, colorText: "text-pink-400", colorBg: "bg-pink-400/10" },
+    { icon: Zap, label: "XP Total gerado", value: stats.total_xp, colorText: "text-[hsl(45_90%_60%)]", colorBg: "bg-[hsl(45_90%_60%/0.1)]" },
+    { icon: Timer, label: "Pomodoros totais", value: stats.pomodoros_completed, colorText: "text-[hsl(330_80%_60%)]", colorBg: "bg-[hsl(330_80%_60%/0.1)]" },
   ];
 
   const toggleRole = (userId: string) => {
@@ -140,7 +140,7 @@ export default function Admin() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-foreground">Pendentes</span>
-                  <span className="text-xs font-bold text-yellow-400">{pendingTasks}</span>
+                  <span className="text-xs font-bold text-[hsl(45_90%_60%)]">{pendingTasks}</span>
                 </div>
               </div>
             </div>
@@ -154,15 +154,15 @@ export default function Admin() {
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Streak</span>
-                  <span className="font-bold text-orange-400">{stats.current_streak} dias</span>
+                  <span className="font-bold text-[hsl(45_90%_60%)]">{stats.current_streak} dias</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">Minutos de foco</span>
-                  <span className="font-bold text-pink-400">{stats.total_focus_minutes}min</span>
+                  <span className="font-bold text-[hsl(330_80%_60%)]">{stats.total_focus_minutes}min</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">XP de tarefas</span>
-                  <span className="font-bold text-yellow-400">{totalXPFromTasks}</span>
+                  <span className="font-bold text-[hsl(200_80%_55%)]">{totalXPFromTasks}</span>
                 </div>
               </div>
             </div>
@@ -201,7 +201,7 @@ export default function Admin() {
               >
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold text-white"
-                  style={{ backgroundColor: u.avatarColor || "#7c3aed" }}
+                  style={{ backgroundColor: u.avatarColor || "hsl(250 85% 65%)" }}
                 >
                   {u.name.slice(0, 2).toUpperCase()}
                 </div>
@@ -219,7 +219,7 @@ export default function Admin() {
                 </div>
                 <span className={cn(
                   "flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full",
-                  u.role === "admin" ? "text-yellow-400 bg-yellow-400/10" : "text-muted-foreground bg-muted"
+                  u.role === "admin" ? "text-[hsl(45_90%_60%)] bg-[hsl(45_90%_60%/0.1)]" : "text-muted-foreground bg-muted"
                 )}>
                   {u.role === "admin" ? <><Crown className="w-3 h-3" /> Admin</> : "Usuário"}
                 </span>
@@ -285,7 +285,7 @@ export default function Admin() {
                 <span className={cn(
                   "text-[10px] font-bold px-2 py-0.5 rounded-full",
                   task.priority === "high" ? "bg-destructive/10 text-destructive"
-                    : task.priority === "medium" ? "bg-yellow-400/10 text-yellow-400"
+                    : task.priority === "medium" ? "bg-[hsl(45_90%_60%/0.1)] text-[hsl(45_90%_60%)]"
                     : "bg-muted text-muted-foreground"
                 )}>
                   {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Média" : "Baixa"}

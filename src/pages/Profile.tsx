@@ -91,7 +91,11 @@ export default function Profile() {
 
   const currentDivision = [...DIVISIONS].reverse().find((d) => level >= d.minLevel) || DIVISIONS[0];
   const latestAchievement = [...ACHIEVEMENTS].reverse().find(isUnlocked);
+  // Horas inteiras escondiam qualquer foco abaixo de 60min (sempre "0h", mesmo
+  // com sessões já registradas) — agora mostra minutos enquanto não completa 1h.
   const focusHours = Math.floor(stats.total_focus_minutes / 60);
+  const focusMins = stats.total_focus_minutes % 60;
+  const focusDisplay = focusHours > 0 ? `${focusHours}h${String(focusMins).padStart(2, "0")}` : `${focusMins}min`;
   const memberSince = user?.createdAt
     ? format(new Date(user.createdAt), "MMMM 'de' yyyy", { locale: ptBR })
     : null;
@@ -136,7 +140,7 @@ export default function Profile() {
             <p className="text-[11px] text-muted-foreground mt-0.5">tarefas concluídas</p>
           </div>
           <div>
-            <p className="text-xl font-heading font-bold text-foreground">{focusHours}h</p>
+            <p className="text-xl font-heading font-bold text-foreground">{focusDisplay}</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">de foco acumulado</p>
           </div>
           <div>

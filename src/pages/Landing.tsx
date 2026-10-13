@@ -1,23 +1,23 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { CheckCircle2, ArrowRight, Zap, Trophy, Flame, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 const ticker = [
-  "Ganhe XP ⚡",
-  "Suba de nível 🏆",
-  "Foque com Pomodoro ⏱",
-  "Complete tarefas ✅",
-  "Desbloqueie conquistas 🎖",
-  "Acompanhe seu progresso 📈",
-  "Seja mais produtivo 🔥",
-  "Ganhe XP ⚡",
-  "Suba de nível 🏆",
-  "Foque com Pomodoro ⏱",
-  "Complete tarefas ✅",
-  "Desbloqueie conquistas 🎖",
-  "Acompanhe seu progresso 📈",
-  "Seja mais produtivo 🔥",
+  "Ganhe XP",
+  "Suba de nível",
+  "Foque com Pomodoro",
+  "Complete tarefas",
+  "Desbloqueie conquistas",
+  "Acompanhe seu progresso",
+  "Seja mais produtivo",
+  "Ganhe XP",
+  "Suba de nível",
+  "Foque com Pomodoro",
+  "Complete tarefas",
+  "Desbloqueie conquistas",
+  "Acompanhe seu progresso",
+  "Seja mais produtivo",
 ];
 
 function Marquee() {
@@ -52,6 +52,17 @@ const after = [
   "Sequências que você não quer perder",
 ];
 
+function Logomark({ size = 32 }: { size?: number }) {
+  return (
+    <div
+      className="rounded-lg bg-primary flex items-center justify-center shrink-0"
+      style={{ width: size, height: size }}
+    >
+      <Zap className="text-primary-foreground" style={{ width: size * 0.5, height: size * 0.5 }} fill="currentColor" />
+    </div>
+  );
+}
+
 export default function Landing() {
   const [showIntro, setShowIntro] = useState(true);
 
@@ -64,27 +75,16 @@ export default function Landing() {
     <div className="min-h-screen bg-background text-foreground">
 
       {/* ─── ANIMATED HERO ─── */}
-      <section
-        style={{
-          background: "#0a0a0f",
-          height: "100vh",
-          fontFamily: "'Inter', sans-serif",
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <section className="relative overflow-hidden flex flex-col bg-background min-h-screen">
         {/* Grid background */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 1 }}
+          className="absolute inset-0"
           style={{
-            position: "absolute",
-            inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(120,100,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(120,100,255,0.06) 1px, transparent 1px)",
+              "linear-gradient(hsl(250 85% 65% / 0.06) 1px, transparent 1px), linear-gradient(90deg, hsl(250 85% 65% / 0.06) 1px, transparent 1px)",
             backgroundSize: "40px 40px",
           }}
         />
@@ -94,14 +94,13 @@ export default function Landing() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 1.2 }}
+          className="absolute pointer-events-none"
           style={{
-            position: "absolute",
             width: 500,
             height: 300,
-            background: "radial-gradient(ellipse, rgba(100,80,255,0.22) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse, hsl(250 85% 65% / 0.22) 0%, transparent 70%)",
             top: -60,
             left: -80,
-            pointerEvents: "none",
           }}
         />
 
@@ -113,37 +112,17 @@ export default function Landing() {
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.6, ease: [0.7, 0, 0.3, 1] }}
-              style={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 99,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "#0a0a0f",
-              }}
+              className="absolute inset-0 flex items-center justify-center bg-background"
+              style={{ zIndex: 99 }}
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
-                style={{ display: "flex", alignItems: "center", gap: 12 }}
+                className="flex items-center gap-3"
               >
-                <div
-                  style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    background: "linear-gradient(135deg, #7c5cfc, #5b3fe8)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 22,
-                  }}
-                >
-                  ⚡
-                </div>
-                <span style={{ fontSize: 26, fontWeight: 900, color: "#fff", letterSpacing: "-0.5px" }}>
+                <Logomark size={44} />
+                <span className="text-foreground font-heading" style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.5px" }}>
                   BRIO
                 </span>
               </motion.div>
@@ -156,43 +135,25 @@ export default function Landing() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2.2, duration: 0.5 }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "18px 36px",
-            borderBottom: "0.5px solid rgba(255,255,255,0.07)",
-            position: "relative",
-            zIndex: 2,
-          }}
+          className="flex items-center justify-between px-9 py-[18px] border-b border-foreground/[0.07] relative"
+          style={{ zIndex: 2 }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 17, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px" }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 9,
-                background: "linear-gradient(135deg, #7c5cfc, #5b3fe8)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 15,
-              }}
-            >
-              ⚡
-            </div>
+          <div className="flex items-center gap-2.5 text-foreground font-heading" style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.3px" }}>
+            <Logomark size={32} />
             BRIO
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="flex gap-2 items-center">
             <Link
               to="/login"
-              style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", padding: "7px 14px", borderRadius: 8, textDecoration: "none" }}
+              className="text-foreground/55 hover:text-foreground/80 transition-colors no-underline"
+              style={{ fontSize: 13, padding: "7px 14px", borderRadius: 8 }}
             >
               Entrar
             </Link>
             <Link
               to="/login"
-              style={{ background: "#6c47ff", color: "#fff", fontSize: 13, fontWeight: 600, padding: "8px 18px", borderRadius: 9, textDecoration: "none" }}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground no-underline transition-colors"
+              style={{ fontSize: 13, fontWeight: 600, padding: "8px 18px", borderRadius: 9 }}
             >
               Criar conta
             </Link>
@@ -201,75 +162,51 @@ export default function Landing() {
 
         {/* HERO CONTENT */}
         <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 48,
-            maxWidth: 1200,
-            margin: "0 auto",
-            padding: "0 56px",
-            width: "100%",
-          }}
+          className="relative flex-1 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-10 lg:gap-12 mx-auto w-full"
+          style={{ zIndex: 2, maxWidth: 1200, padding: "40px clamp(20px, 6vw, 56px)" }}
         >
           {/* Left */}
-          <div style={{ flex: 1, maxWidth: 580 }}>
+          <div className="flex-1 w-full" style={{ maxWidth: 580 }}>
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 2.3, duration: 0.5 }}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 7,
-                background: "rgba(108,71,255,0.15)",
-                border: "0.5px solid rgba(108,71,255,0.35)",
-                color: "#a68dff",
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: "0.8px",
-                padding: "6px 14px",
-                borderRadius: 20,
-                marginBottom: 28,
-                textTransform: "uppercase",
-              }}
+              className="inline-flex items-center gap-1.5 bg-primary/15 border border-primary/35 text-primary uppercase mb-7"
+              style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.8px", padding: "6px 14px", borderRadius: 20 }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#7c5cfc", display: "inline-block" }} />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
               Plataforma de produtividade
             </motion.div>
 
             {/* Headline */}
-            <h1 style={{ fontSize: 76, fontWeight: 900, lineHeight: 1.0, letterSpacing: "-3px", color: "#fff", marginBottom: 28 }}>
-              <span style={{ display: "block", overflow: "hidden" }}>
+            <h1 className="font-heading" style={{ fontSize: "clamp(2.75rem, 8vw, 4.75rem)", fontWeight: 900, lineHeight: 1.0, letterSpacing: "-0.03em", marginBottom: 28 }}>
+              <span className="block overflow-hidden">
                 <motion.span
                   initial={{ opacity: 0, y: "100%" }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 2.45, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ display: "block", color: "#fff" }}
+                  className="block text-foreground"
                 >
                   Pare de fingir
                 </motion.span>
               </span>
-              <span style={{ display: "block", overflow: "hidden" }}>
+              <span className="block overflow-hidden">
                 <motion.span
                   initial={{ opacity: 0, y: "100%" }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 2.55, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ display: "block", color: "#7c5cfc" }}
+                  className="block text-primary"
                 >
                   que vai ser
                 </motion.span>
               </span>
-              <span style={{ display: "block", overflow: "hidden" }}>
+              <span className="block overflow-hidden">
                 <motion.span
                   initial={{ opacity: 0, y: "100%" }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 2.65, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                  style={{ display: "block", color: "rgba(255,255,255,0.2)" }}
+                  className="block text-foreground/20"
                 >
                   produtivo.
                 </motion.span>
@@ -281,10 +218,11 @@ export default function Landing() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 2.85, duration: 0.5 }}
-              style={{ fontSize: 18, color: "rgba(255,255,255,0.5)", lineHeight: 1.7, marginBottom: 36, maxWidth: 480 }}
+              className="text-foreground/50"
+              style={{ fontSize: 18, lineHeight: 1.7, marginBottom: 36, maxWidth: 480 }}
             >
               O BRIO transforma suas tarefas em um jogo. Você ganha{" "}
-              <strong style={{ color: "rgba(255,255,255,0.8)", fontWeight: 400 }}>XP</strong>, sobe de nível e desbloqueia conquistas reais — sem enrolação.
+              <strong className="text-foreground/80" style={{ fontWeight: 400 }}>XP</strong>, sobe de nível e desbloqueia conquistas reais — sem enrolação.
             </motion.p>
 
             {/* CTA */}
@@ -292,17 +230,19 @@ export default function Landing() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 3, duration: 0.5 }}
-              style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 32 }}
+              className="flex items-center gap-5 mb-8"
             >
               <Link
                 to="/login"
-                style={{ background: "#6c47ff", color: "#fff", fontSize: 16, fontWeight: 600, padding: "15px 30px", borderRadius: 12, textDecoration: "none" }}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground no-underline transition-colors"
+                style={{ fontSize: 16, fontWeight: 600, padding: "15px 30px", borderRadius: 12 }}
               >
                 Quero começar →
               </Link>
               <Link
                 to="/login"
-                style={{ color: "rgba(255,255,255,0.55)", fontSize: 16, background: "none", textDecoration: "underline", textUnderlineOffset: 3 }}
+                className="text-foreground/55 hover:text-foreground/75 transition-colors"
+                style={{ fontSize: 16, textDecoration: "underline", textUnderlineOffset: 3 }}
               >
                 Já tenho conta
               </Link>
@@ -313,11 +253,12 @@ export default function Landing() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 3.15, duration: 0.5 }}
-              style={{ fontSize: 14, color: "rgba(255,255,255,0.25)", display: "flex", gap: 20 }}
+              className="text-foreground/25 flex gap-5"
+              style={{ fontSize: 14 }}
             >
               {["Grátis", "Sem cartão", "Sem anúncio"].map((t) => (
-                <span key={t}>
-                  <span style={{ color: "#7c5cfc" }}>✓ </span>
+                <span key={t} className="inline-flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5 text-primary" />
                   {t}
                 </span>
               ))}
@@ -325,35 +266,33 @@ export default function Landing() {
           </div>
 
           {/* Right — Card Stack */}
-          <div style={{ flexShrink: 0 }}>
-            <div style={{ position: "relative", width: 320 }}>
+          <div className="w-full lg:shrink-0" style={{ maxWidth: 320 }}>
+            <div className="relative w-full">
 
               {/* XP Card */}
               <motion.div
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 2.5, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "0.5px solid rgba(255,255,255,0.1)",
-                  borderRadius: 16,
-                  padding: "20px 22px",
-                }}
+                className="bg-foreground/[0.04] border border-foreground/10 rounded-2xl"
+                style={{ padding: "20px 22px" }}
               >
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 10, letterSpacing: "0.4px" }}>TAREFA CONCLUÍDA</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: "#fff", marginBottom: 14, display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(108,71,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#a68dff", flexShrink: 0 }}>✓</span>
+                <div className="text-foreground/35" style={{ fontSize: 12, marginBottom: 10, letterSpacing: "0.4px" }}>TAREFA CONCLUÍDA</div>
+                <div className="text-foreground flex items-center gap-2.5" style={{ fontSize: 16, fontWeight: 600, marginBottom: 14 }}>
+                  <span className="w-[22px] h-[22px] rounded-full bg-primary/30 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3 h-3 text-primary" />
+                  </span>
                   Revisar relatório Q2
                 </div>
-                <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 4, height: 6 }}>
+                <div className="bg-foreground/[0.08] rounded h-1.5">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: "68%" }}
                     transition={{ delay: 3.1, duration: 0.8 }}
-                    style={{ background: "#7c5cfc", borderRadius: 4, height: 6 }}
+                    className="bg-primary rounded h-1.5"
                   />
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "rgba(255,255,255,0.3)", marginTop: 8 }}>
+                <div className="flex justify-between text-foreground/30 mt-2" style={{ fontSize: 13 }}>
                   <span>+120 XP</span>
                   <span>68% do nível</span>
                 </div>
@@ -364,38 +303,18 @@ export default function Landing() {
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 2.65, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  background: "rgba(255,255,255,0.04)",
-                  border: "0.5px solid rgba(255,255,255,0.1)",
-                  borderRadius: 16,
-                  padding: "16px 20px",
-                  marginTop: 12,
-                }}
+                className="flex items-center gap-3.5 bg-foreground/[0.04] border border-foreground/10 rounded-2xl mt-3"
+                style={{ padding: "16px 20px" }}
               >
                 <div
-                  style={{
-                    width: 46,
-                    height: 46,
-                    borderRadius: 12,
-                    background: "rgba(108,71,255,0.25)",
-                    border: "1px solid rgba(108,71,255,0.4)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 20,
-                    fontWeight: 900,
-                    color: "#a68dff",
-                    flexShrink: 0,
-                  }}
+                  className="rounded-xl bg-primary/25 border border-primary/40 flex items-center justify-center text-primary font-heading shrink-0"
+                  style={{ width: 46, height: 46, fontSize: 20, fontWeight: 900 }}
                 >
                   7
                 </div>
                 <div>
-                  <p style={{ fontSize: 15, fontWeight: 600, color: "#fff" }}>Nível 7 — Executor</p>
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>Próximo: Estrategista (lv. 8)</span>
+                  <p className="text-foreground" style={{ fontSize: 15, fontWeight: 600 }}>Nível 7 — Executor</p>
+                  <span className="text-foreground/35" style={{ fontSize: 13 }}>Próximo: Estrategista (lv. 8)</span>
                 </div>
               </motion.div>
 
@@ -404,16 +323,14 @@ export default function Landing() {
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 2.8, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "0.5px solid rgba(255,255,255,0.1)",
-                  borderRadius: 16,
-                  padding: "20px 22px",
-                  marginTop: 12,
-                }}
+                className="bg-foreground/[0.04] border border-foreground/10 rounded-2xl mt-3"
+                style={{ padding: "20px 22px" }}
               >
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 10, letterSpacing: "0.4px" }}>CONQUISTA DESBLOQUEADA</div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: "#fff" }}>🏆 Semana sem procrastinação</div>
+                <div className="text-foreground/35" style={{ fontSize: 12, marginBottom: 10, letterSpacing: "0.4px" }}>CONQUISTA DESBLOQUEADA</div>
+                <div className="text-foreground flex items-center gap-2" style={{ fontSize: 16, fontWeight: 600 }}>
+                  <Trophy className="w-4 h-4 text-[hsl(45_90%_60%)]" />
+                  Semana sem procrastinação
+                </div>
               </motion.div>
 
               {/* Streak pill */}
@@ -421,21 +338,11 @@ export default function Landing() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 3.2, duration: 0.4 }}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 6,
-                  background: "rgba(239,150,39,0.12)",
-                  border: "0.5px solid rgba(239,150,39,0.3)",
-                  color: "#f5a623",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  padding: "6px 14px",
-                  borderRadius: 20,
-                  marginTop: 12,
-                }}
+                className="inline-flex items-center gap-1.5 bg-[hsl(45_90%_60%/0.12)] border border-[hsl(45_90%_60%/0.3)] text-[hsl(45_90%_60%)] mt-3"
+                style={{ fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: 20 }}
               >
-                🔥 7 dias de sequência
+                <Flame className="w-3.5 h-3.5" />
+                7 dias de sequência
               </motion.div>
 
             </div>
@@ -593,10 +500,8 @@ export default function Landing() {
       {/* FOOTER */}
       <footer className="border-t border-border/30 py-6 px-5">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 24, height: 24, borderRadius: 6, background: "linear-gradient(135deg, #7c5cfc, #5b3fe8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>
-              ⚡
-            </div>
+          <div className="flex items-center gap-2">
+            <Logomark size={24} />
             <span className="text-xs font-heading font-bold">BRIO</span>
           </div>
           <p className="text-xs text-muted-foreground/30">© 2026</p>

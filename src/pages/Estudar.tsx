@@ -1,6 +1,9 @@
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Trophy, RotateCcw, CheckCircle2, XCircle, Loader2, CalendarClock, Plus, Trash2, Play } from "lucide-react";
+import {
+  BookOpen, Trophy, RotateCcw, CheckCircle2, XCircle, Loader2, CalendarClock, Plus, Trash2, Play,
+  Atom, Landmark, Globe2, Calculator, BookText, Monitor, Palette, Dumbbell,
+} from "lucide-react";
 import { differenceInCalendarDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useApp } from "@/context/AppContext";
@@ -8,20 +11,22 @@ import { STUDY_QUESTIONS } from "@/data/studyQuestions";
 import EnemPractice from "@/components/estudar/EnemPractice";
 
 const SUBJECTS = [
-  { id: 17, label: "Ciências", emoji: "🔬" },
-  { id: 23, label: "História", emoji: "📜" },
-  { id: 22, label: "Geografia", emoji: "🌍" },
-  { id: 19, label: "Matemática", emoji: "➗" },
-  { id: 10, label: "Literatura", emoji: "📚" },
-  { id: 18, label: "Informática", emoji: "💻" },
-  { id: 25, label: "Arte", emoji: "🎨" },
-  { id: 21, label: "Esportes", emoji: "⚽" },
+  { id: 17, label: "Ciências", icon: Atom },
+  { id: 23, label: "História", icon: Landmark },
+  { id: 22, label: "Geografia", icon: Globe2 },
+  { id: 19, label: "Matemática", icon: Calculator },
+  { id: 10, label: "Literatura", icon: BookText },
+  { id: 18, label: "Informática", icon: Monitor },
+  { id: 25, label: "Arte", icon: Palette },
+  { id: 21, label: "Esportes", icon: Dumbbell },
 ];
 
+// Mesma lógica de "pontinho colorido" usada em Perfil/Dashboard — sem emoji,
+// cores já definidas no design system.
 const DIFFICULTIES = [
-  { id: "easy", label: "Fácil", xp: 10, badge: "🟢" },
-  { id: "medium", label: "Médio", xp: 20, badge: "🟡" },
-  { id: "hard", label: "Difícil", xp: 30, badge: "🔴" },
+  { id: "easy", label: "Fácil", xp: 10, color: "hsl(175 80% 50%)" },
+  { id: "medium", label: "Médio", xp: 20, color: "hsl(45 90% 60%)" },
+  { id: "hard", label: "Difícil", xp: 30, color: "hsl(0 72% 55%)" },
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -209,7 +214,7 @@ export default function Estudar() {
                 <option value="">Selecione a matéria</option>
                 {SUBJECTS.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.emoji} {s.label}
+                    {s.label}
                   </option>
                 ))}
               </select>
@@ -255,7 +260,7 @@ export default function Estudar() {
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="font-semibold text-foreground flex items-center gap-2">
-                            <span>{subject?.emoji}</span>
+                            {subject && <subject.icon className="w-4 h-4 text-muted-foreground" />}
                             {plan.subject_label}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
@@ -330,7 +335,7 @@ export default function Estudar() {
                         : "border-border hover:border-primary/40 hover:bg-secondary/50"
                     }`}
                   >
-                    <span className="text-2xl">{s.emoji}</span>
+                    <s.icon className="w-5 h-5 text-primary" />
                     <span className="text-xs font-semibold text-center leading-tight">{s.label}</span>
                   </button>
                 ))}
@@ -352,7 +357,7 @@ export default function Estudar() {
                         : "border-border hover:border-primary/40 hover:bg-secondary/50"
                     }`}
                   >
-                    <span className="text-xl">{d.badge}</span>
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.color }} />
                     <span className="text-xs sm:text-sm font-semibold">{d.label}</span>
                     <span className="text-[10px] sm:text-xs text-primary font-mono font-bold text-center">
                       +{d.xp} XP<span className="hidden sm:inline">/acerto</span>
@@ -368,7 +373,7 @@ export default function Estudar() {
               className="w-full h-12 bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-[0_4px_20px_hsl(250_85%_65%/0.25)]"
             >
               <BookOpen className="w-4 h-4" />
-              {selectedSubject ? `Começar — ${selectedSubject.emoji} ${selectedSubject.label}` : "Selecione uma matéria"}
+              {selectedSubject ? `Começar — ${selectedSubject.label}` : "Selecione uma matéria"}
             </button>
           </motion.div>
         )}
@@ -413,8 +418,9 @@ export default function Estudar() {
 
             {/* Info topo */}
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">
-                {selectedSubject?.emoji} {selectedSubject?.label} · {selectedDifficulty.label}
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {selectedSubject && <selectedSubject.icon className="w-3.5 h-3.5" />}
+                {selectedSubject?.label} · {selectedDifficulty.label}
               </span>
               <span className="text-xs font-mono text-primary font-bold">+{totalXP} XP</span>
             </div>
@@ -435,8 +441,8 @@ export default function Estudar() {
                 const revealed = selected !== null;
 
                 let cls = "border-border hover:border-primary/50 hover:bg-secondary/50";
-                if (revealed && isCorrect) cls = "border-green-500 bg-green-500/10";
-                else if (revealed && isSelected && !isCorrect) cls = "border-red-500 bg-red-500/10";
+                if (revealed && isCorrect) cls = "border-accent bg-accent/10";
+                else if (revealed && isSelected && !isCorrect) cls = "border-destructive bg-destructive/10";
                 else if (revealed) cls = "border-border opacity-40";
 
                 return (
@@ -453,8 +459,8 @@ export default function Estudar() {
                       {["A", "B", "C", "D"][i]}
                     </span>
                     <span className="text-sm font-medium flex-1 leading-snug">{opt}</span>
-                    {revealed && isCorrect && <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />}
-                    {revealed && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+                    {revealed && isCorrect && <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />}
+                    {revealed && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-destructive shrink-0" />}
                   </motion.button>
                 );
               })}
@@ -468,14 +474,14 @@ export default function Estudar() {
                   animate={{ opacity: 1, y: 0 }}
                   className={`flex items-center justify-between p-4 rounded-xl border ${
                     selected === current.correct
-                      ? "bg-green-500/10 border-green-500/20 text-green-400"
-                      : "bg-red-500/10 border-red-500/20 text-red-400"
+                      ? "bg-accent/10 border-accent/20 text-accent"
+                      : "bg-destructive/10 border-destructive/20 text-destructive"
                   }`}
                 >
                   <span className="text-sm font-semibold">
                     {selected === current.correct
-                      ? `✅ Correto! +${selectedDifficulty.xp} XP`
-                      : `❌ Errou! Resposta: ${current.correct}`}
+                      ? `Correto! +${selectedDifficulty.xp} XP`
+                      : `Errou! Resposta: ${current.correct}`}
                   </span>
                   <button
                     onClick={nextQuestion}
@@ -503,8 +509,9 @@ export default function Estudar() {
 
             <div>
               <h2 className="text-2xl font-heading font-black">Quiz Concluído!</h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                {selectedSubject?.emoji} {selectedSubject?.label} · {selectedDifficulty.label}
+              <p className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm mt-1">
+                {selectedSubject && <selectedSubject.icon className="w-3.5 h-3.5" />}
+                {selectedSubject?.label} · {selectedDifficulty.label}
               </p>
             </div>
 
@@ -527,12 +534,12 @@ export default function Estudar() {
 
             <p className="text-sm text-muted-foreground">
               {score === questions.length
-                ? "🔥 Perfeito! Mandou muito bem!"
+                ? "Perfeito! Mandou muito bem!"
                 : score >= questions.length * 0.7
-                ? "👏 Ótimo resultado! Continue assim!"
+                ? "Ótimo resultado! Continue assim!"
                 : score >= questions.length * 0.5
-                ? "📚 Bom esforço! Revise o conteúdo."
-                : "💪 Continue estudando! Você vai melhorar!"}
+                ? "Bom esforço! Revise o conteúdo."
+                : "Continue estudando! Você vai melhorar!"}
             </p>
 
             <div className="flex gap-3 w-full">
