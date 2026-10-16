@@ -1,9 +1,9 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, User, Mail, FileText, Palette,
-  Lock, CheckCircle2, AlertCircle, Camera, Loader2
+  Lock, CheckCircle2, AlertCircle, Camera, Loader2, X
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
@@ -37,6 +37,14 @@ export default function EditProfile() {
     avatarColor: user?.avatarColor || "#7c3aed",
   });
 
+  // Foto: assim como os outros campos, a troca/remoção só fica guardada aqui
+  // (preview local, nada enviado ainda) até o usuário apertar "Salvar
+  // alterações" — "Cancelar" só precisa sair da tela, sem desfazer nada no
+  // servidor, porque nada foi lá ainda.
+  const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
+
   const [pwForm, setPwForm] = useState({
     current: "",
     next: "",
@@ -44,8 +52,16 @@ export default function EditProfile() {
   });
 
   const [feedback, setFeedback] = useState<{ type: "ok" | "err"; msg: string } | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Evita vazar memória com blob URLs de preview que nunca foram usadas (se o
+  // usuário trocar de foto várias vezes antes de salvar, ou sair da tela).
+  useEffect(() => {
+    return () => {
+      if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    };
+  }, [photoPreviewUrl]);
 
   // Apaga tudo que já existe na pasta do usuário (exceto, opcionalmente, um arquivo).
   const cleanupOldPhotos = async (keepPath?: string) => {
@@ -57,10 +73,10 @@ export default function EditProfile() {
     if (toRemove.length > 0) await supabase.storage.from("avatars").remove(toRemove);
   };
 
-  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = ""; // permite escolher o mesmo arquivo de novo depois
-    if (!file || !user) return;
+    if (!file) return;
 
     const ext = ALLOWED_TYPES[file.type];
     if (!ext) {
@@ -72,49 +88,29 @@ export default function EditProfile() {
       return;
     }
 
-    setUploading(true);
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPendingPhotoFile(file);
+    setPhotoPreviewUrl(URL.createObjectURL(file));
+    setRemovePhoto(false);
     setFeedback(null);
-
-    // Nome único por upload evita o navegador mostrar a foto antiga em cache.
-    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { contentType: file.type, upsert: false });
-
-    if (uploadError) {
-      setUploading(false);
-      setFeedback({ type: "err", msg: "Não foi possível enviar a foto. Tente novamente." });
-      return;
-    }
-
-    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
-    const result = await updateProfile({ avatarUrl: urlData.publicUrl });
-
-    if (!result.success) {
-      setUploading(false);
-      setFeedback({ type: "err", msg: result.error || "Erro ao salvar a foto." });
-      return;
-    }
-
-    await cleanupOldPhotos(path);
-    setUploading(false);
-    setFeedback({ type: "ok", msg: "Foto atualizada!" });
-    setTimeout(() => setFeedback(null), 3000);
   };
 
-  const handleRemovePhoto = async () => {
-    setUploading(true);
+  // Só marca a remoção como pendente — some da tela, mas só vira de verdade
+  // no storage/perfil quando "Salvar alterações" for clicado.
+  const handleStageRemovePhoto = () => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPendingPhotoFile(null);
+    setPhotoPreviewUrl(null);
+    setRemovePhoto(true);
     setFeedback(null);
-    const result = await updateProfile({ avatarUrl: "" });
-    if (!result.success) {
-      setUploading(false);
-      setFeedback({ type: "err", msg: result.error || "Erro ao remover a foto." });
-      return;
-    }
-    await cleanupOldPhotos();
-    setUploading(false);
-    setFeedback({ type: "ok", msg: "Foto removida." });
-    setTimeout(() => setFeedback(null), 3000);
+  };
+
+  const handleUndoPhotoChange = () => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPendingPhotoFile(null);
+    setPhotoPreviewUrl(null);
+    setRemovePhoto(false);
+    setFeedback(null);
   };
 
   const handleSaveInfo = async (e: React.FormEvent) => {
@@ -123,13 +119,65 @@ export default function EditProfile() {
       setFeedback({ type: "err", msg: "O nome não pode ser vazio." });
       return;
     }
-    const result = await updateProfile({ name: form.name, email: form.email, bio: form.bio, avatarColor: form.avatarColor });
+
+    setSaving(true);
+    setFeedback(null);
+
+    let avatarUrl: string | undefined; // undefined = não mexe na foto atual
+    let uploadedPath: string | undefined;
+
+    if (pendingPhotoFile && user) {
+      const ext = ALLOWED_TYPES[pendingPhotoFile.type];
+      // Nome único por upload evita o navegador mostrar a foto antiga em cache.
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, pendingPhotoFile, { contentType: pendingPhotoFile.type, upsert: false });
+
+      if (uploadError) {
+        setSaving(false);
+        setFeedback({ type: "err", msg: "Não foi possível enviar a foto. Tente novamente." });
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+      avatarUrl = urlData.publicUrl;
+      uploadedPath = path;
+    } else if (removePhoto) {
+      avatarUrl = "";
+    }
+
+    const result = await updateProfile({
+      name: form.name,
+      email: form.email,
+      bio: form.bio,
+      avatarColor: form.avatarColor,
+      ...(avatarUrl !== undefined ? { avatarUrl } : {}),
+    });
+
     if (!result.success) {
+      setSaving(false);
       setFeedback({ type: "err", msg: result.error || "Erro ao atualizar perfil." });
       return;
     }
+
+    if (pendingPhotoFile || removePhoto) {
+      await cleanupOldPhotos(uploadedPath);
+    }
+
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    setPendingPhotoFile(null);
+    setPhotoPreviewUrl(null);
+    setRemovePhoto(false);
+
+    setSaving(false);
     setFeedback({ type: "ok", msg: "Perfil atualizado com sucesso!" });
     setTimeout(() => setFeedback(null), 3000);
+  };
+
+  const handleCancel = () => {
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    navigate(-1);
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -152,6 +200,10 @@ export default function EditProfile() {
     setTimeout(() => setFeedback(null), 3000);
   };
 
+  // Prioridade de exibição: foto nova escolhida > "sem foto" se marcada pra
+  // remoção > foto que já está salva.
+  const displayAvatarUrl = pendingPhotoFile ? photoPreviewUrl : (removePhoto ? null : user?.avatarUrl);
+  const hasPendingPhotoChange = !!pendingPhotoFile || removePhoto;
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
@@ -176,7 +228,7 @@ export default function EditProfile() {
         <div className="flex flex-col items-center mb-6">
           <div className="relative">
             <UserAvatar
-              url={user?.avatarUrl}
+              url={displayAvatarUrl}
               color={form.avatarColor}
               name={form.name || user?.name}
               size={80}
@@ -185,11 +237,11 @@ export default function EditProfile() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
+              disabled={saving}
               aria-label="Trocar foto de perfil"
               className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary hover:bg-primary/90 disabled:opacity-70 rounded-lg flex items-center justify-center border-2 border-card transition-colors"
             >
-              {uploading ? (
+              {saving ? (
                 <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
               ) : (
                 <Camera className="w-3.5 h-3.5 text-white" />
@@ -203,11 +255,26 @@ export default function EditProfile() {
               className="hidden"
             />
           </div>
-          {user?.avatarUrl ? (
+
+          {hasPendingPhotoChange ? (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-xs text-primary">
+                {pendingPhotoFile ? "Nova foto selecionada" : "Foto será removida"}
+              </span>
+              <button
+                type="button"
+                onClick={handleUndoPhotoChange}
+                disabled={saving}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-60"
+              >
+                <X className="w-3 h-3" /> Desfazer
+              </button>
+            </div>
+          ) : user?.avatarUrl ? (
             <button
               type="button"
-              onClick={handleRemovePhoto}
-              disabled={uploading}
+              onClick={handleStageRemovePhoto}
+              disabled={saving}
               className="mt-3 text-xs text-muted-foreground hover:text-destructive transition-colors disabled:opacity-60"
             >
               Remover foto
@@ -324,16 +391,19 @@ export default function EditProfile() {
             <div className="pt-2 flex gap-3">
               <button
                 type="button"
-                onClick={() => navigate(-1)}
-                className="flex-1 py-2.5 bg-secondary hover:bg-secondary/80 text-muted-foreground rounded-xl text-sm font-medium transition-colors"
+                onClick={handleCancel}
+                disabled={saving}
+                className="flex-1 py-2.5 bg-secondary hover:bg-secondary/80 text-muted-foreground rounded-xl text-sm font-medium transition-colors disabled:opacity-60"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="flex-1 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-semibold transition-colors"
+                disabled={saving}
+                className="flex-1 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-70 text-white rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
               >
-                Salvar alterações
+                {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {saving ? "Salvando..." : "Salvar alterações"}
               </button>
             </div>
           </motion.form>

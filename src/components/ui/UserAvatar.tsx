@@ -16,7 +16,13 @@ const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined) ?
 const ALLOWED_PREFIX = SUPABASE_URL ? `${SUPABASE_URL}/storage/v1/object/public/avatars/` : "";
 
 function isTrustedAvatarUrl(url?: string | null): url is string {
-  return !!url && !!ALLOWED_PREFIX && url.startsWith(ALLOWED_PREFIX);
+  if (!url) return false;
+  // blob: é liberado à parte: só existe dentro da própria aba que chamou
+  // URL.createObjectURL (preview local de uma foto ainda não salva, em
+  // EditProfile) — nunca é gravado em lugar nenhum nem visível pra mais
+  // ninguém, então não tem o risco que a checagem acima existe pra evitar.
+  if (url.startsWith("blob:")) return true;
+  return !!ALLOWED_PREFIX && url.startsWith(ALLOWED_PREFIX);
 }
 
 export default function UserAvatar({ url, color, name, size = 40, className }: UserAvatarProps) {

@@ -78,7 +78,7 @@ export default function Profile() {
     if (savingTheme) return;
     setThemeError("");
     setSavingTheme(themeId);
-    const result = await updateProfile({ avatarColor: color });
+    const result = await updateProfile({ avatarColor: color, theme: themeId });
     setSavingTheme(null);
     if (!result.success) {
       setThemeError(result.error || "Não foi possível aplicar o tema.");
@@ -199,7 +199,7 @@ export default function Profile() {
               {THEMES.map((theme, i) => {
                 const locked = level < theme.minLevel;
                 const color = PALETTE_TOKENS[i % PALETTE_TOKENS.length];
-                const selected = (user?.avatarColor || "").toLowerCase() === color.toLowerCase();
+                const selected = (user?.theme || "brio_classic") === theme.id;
                 const saving = savingTheme === theme.id;
                 return (
                   <motion.div

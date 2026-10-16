@@ -9,6 +9,11 @@ export interface UserProfile {
   bio: string;
   avatarColor: string;
   avatarUrl?: string;
+  /** Id do tema escolhido em Perfil > Temas (ex: "brio_classic", "alvo"). Separado
+   *  de avatarColor porque vários temas cíclam pelas mesmas 5 cores do design
+   *  system — sem o id próprio, não dá pra saber qual card marcar como selecionado
+   *  quando dois temas caem na mesma cor. */
+  theme?: string;
   role: "user" | "admin";
   createdAt: string;
 }
@@ -56,6 +61,7 @@ function profileFromAuthUser(authUser: User): UserProfile {
     bio: metadata.bio || "Comece sua jornada de produtividade.",
     avatarColor: metadata.avatarColor || "#f5a623",
     avatarUrl: metadata.avatarUrl || undefined,
+    theme: metadata.theme || "brio_classic",
     role: "user",
     createdAt: authUser.created_at,
   };
@@ -205,6 +211,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (data.bio !== undefined) metadata.bio = data.bio;
     if (data.avatarColor !== undefined) metadata.avatarColor = data.avatarColor;
     if (data.avatarUrl !== undefined) metadata.avatarUrl = data.avatarUrl;
+    if (data.theme !== undefined) metadata.theme = data.theme;
 
     const { data: result, error } = await supabase.auth.updateUser({
       email: data.email && data.email !== user.email ? data.email : undefined,
