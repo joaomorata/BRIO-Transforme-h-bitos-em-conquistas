@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { format, subDays } from "date-fns";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
@@ -537,6 +537,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
   }, [user]);
 
+  // O Ranking lê nome/cor/foto direto da tabela user_stats, mas esses campos só
+  // eram gravados quando o usuário ganhava XP (pushStats). Resultado: trocar foto,
+  // tema ou nome no perfil não aparecia no ranking até a próxima pontuação.
+  // Aqui sincronizamos só essas colunas assim que elas mudam.
+  const lastSyncedProfileRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!userId) {
+      lastSyncedProfileRef.current = null;
+      return;
+    }
+    const snapshot = JSON.stringify([userId, user?.name ?? null, user?.avatarColor ?? null, user?.avatarUrl ?? null]);
+    if (lastSyncedProfileRef.current === null) {
+      // primeira leitura da sessão: o sync inicial já grava esses campos
+      lastSyncedProfileRef.current = snapshot;
+      return;
+    }
+    if (lastSyncedProfileRef.current === snapshot) return;
+    lastSyncedProfileRef.current = snapshot;
+    supabase
+      .from("user_stats")
+      .update({
+        display_name: user?.name ?? null,
+        avatar_color: user?.avatarColor ?? null,
+        avatar_url: user?.avatarUrl ?? null,
+      })
+      .eq("user_id", userId)
+      .then(() => {});
+  }, [userId, user?.name, user?.avatarColor, user?.avatarUrl]);
+
   const pushTaskUpsert = useCallback((task: Task) => {
     const uid = userIdRef.current;
     if (!uid) return;
@@ -629,14 +658,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const today = format(new Date(), "yyyy-MM-dd");
     const newXP = prev.total_xp + amount;
     const newLevel = calculateLevel(newXP);
-    let weeklyLog = [...prev.weekly_xp_log];
-    const todayEntry = weeklyLog.find((e) => e.date === today);
-    if (todayEntry) {
-      todayEntry.xp += amount;
-    } else {
-      weeklyLog.push({ date: today, xp: amount });
-    }
-    weeklyLog = weeklyLog.slice(-14);
+    // Atualização imutável: mutar o objeto do dia direto (todayEntry.xp += ...)
+    // alterava o estado anterior e, com o updater do setState rodando duas vezes
+    // (StrictMode), contava o XP de hoje em dobro no gráfico semanal.
+    const hasToday = prev.weekly_xp_log.some((e) => e.date === today);
+    const weeklyLog = (hasToday
+      ? prev.weekly_xp_log.map((e) => (e.date === today ? { ...e, xp: e.xp + amount } : e))
+      : [...prev.weekly_xp_log, { date: today, xp: amount }]
+    ).slice(-14);
     let streak = prev.current_streak;
     let bestStreak = prev.best_streak;
     if (prev.last_active_date !== today) {
@@ -780,10 +809,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, [applyXP, pushStats]);
 
+  // O streak só é recalculado quando o usuário ganha XP, então depois de dias sem
+  // atividade o valor salvo continuava (ex: "5 dias seguidos" mesmo parado há uma
+  // semana). Pra exibição, a sequência só conta se a última atividade foi hoje ou
+  // ontem; o valor salvo não é alterado (applyXP já reinicia pra 1 na próxima vez).
+  const displayStats = useMemo<UserStats>(() => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const yesterday = format(subDays(new Date(), 1), "yyyy-MM-dd");
+    const alive = stats.last_active_date === today || stats.last_active_date === yesterday;
+    return alive || stats.current_streak === 0 ? stats : { ...stats, current_streak: 0 };
+  }, [stats]);
+
   return (
     <AppContext.Provider
       value={{
-        stats,
+        stats: displayStats,
         tasks,
         moodEntries,
         quizResults,

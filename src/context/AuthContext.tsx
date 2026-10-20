@@ -101,8 +101,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRoleResolved(true);
   }, []);
 
+  const currentUserIdRef = useRef<string | null>(null);
+
   const syncUser = useCallback(
     (authUser: User | null) => {
+      // Eventos repetidos do mesmo usuário (token renovado, aba que volta ao foco)
+      // não devem zerar o papel já resolvido: antes isso mandava roleResolved pra
+      // false e a tela de Admin desmontava (em branco) a cada evento.
+      if (authUser && currentUserIdRef.current === authUser.id) {
+        setUser((prev) => (prev ? { ...profileFromAuthUser(authUser), role: prev.role } : prev));
+        return;
+      }
+      currentUserIdRef.current = authUser?.id ?? null;
       roleCheckToken.current++; // invalida qualquer checagem de admin em andamento
       setRoleResolved(false);
       setUser(authUser ? profileFromAuthUser(authUser) : null);
@@ -198,6 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
+    currentUserIdRef.current = null;
     setUser(null);
   }, []);
 

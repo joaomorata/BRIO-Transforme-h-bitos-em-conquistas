@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import UserAvatar from "@/components/ui/UserAvatar";
+import { activeStreak } from "@/lib/streak";
 
 interface LeaderboardRow {
   user_id: string;
@@ -13,6 +14,7 @@ interface LeaderboardRow {
   total_xp: number;
   level: number;
   current_streak: number;
+  last_active_date: string | null;
 }
 
 const MEDAL_COLORS = ["text-yellow-400", "text-slate-300", "text-amber-600"];
@@ -28,7 +30,7 @@ export default function Ranking() {
     (async () => {
       const { data, error: fetchError } = await supabase
         .from("user_stats")
-        .select("user_id, display_name, avatar_color, avatar_url, total_xp, level, current_streak")
+        .select("user_id, display_name, avatar_color, avatar_url, total_xp, level, current_streak, last_active_date")
         .order("total_xp", { ascending: false })
         .limit(50);
 
@@ -110,7 +112,7 @@ export default function Ranking() {
                     {name} {isMe && <span className="text-primary text-xs">(você)</span>}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Nível {row.level} · streak {row.current_streak}d
+                    Nível {row.level} · streak {activeStreak(row.current_streak, row.last_active_date)}d
                   </p>
                 </div>
                 <span className="text-sm font-mono font-bold text-primary shrink-0">

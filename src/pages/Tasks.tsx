@@ -42,7 +42,13 @@ export default function Tasks() {
           <p className="text-sm text-muted-foreground">Gerencie suas atividades e ganhe XP.</p>
         </div>
         <button
-          onClick={() => { setEditingTask(null); setShowForm(!showForm); }}
+          onClick={() => {
+            // Se já tem uma edição aberta, "Nova Tarefa" troca pro form em branco
+            // em vez de fechar o painel (só alterna quando já é um form de nova tarefa).
+            const wasEditing = editingTask !== null;
+            setEditingTask(null);
+            setShowForm(wasEditing ? true : !showForm);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-xl text-sm font-semibold transition-colors"
         >
           <Plus className="w-4 h-4" /> Nova Tarefa
@@ -52,6 +58,7 @@ export default function Tasks() {
       <AnimatePresence>
         {showForm && (
           <TaskForm
+            key={editingTask?.id ?? "new"}
             task={editingTask}
             onSubmit={handleSubmit}
             onCancel={() => { setShowForm(false); setEditingTask(null); }}

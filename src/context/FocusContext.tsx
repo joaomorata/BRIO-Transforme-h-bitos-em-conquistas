@@ -94,9 +94,15 @@ export function FocusProvider({ children }: { children: React.ReactNode }) {
     setSession((prev) => ({ ...prev, mode, remainingAtStart: FOCUS_MODES[mode].duration, startedAt: Date.now(), isRunning: false }));
   }, []);
 
+  // `now` só atualiza enquanto o timer roda; ao dar play/resume ele ainda guarda
+  // o valor antigo da última vez (negativo contra o novo startedAt), o que fazia
+  // o relógio mostrar tempo a MAIS (ex: 30:00) por até 1s antes do primeiro tick.
+  // Por isso sincronizamos `now` com o mesmo instante usado em startedAt.
   const start = useCallback(() => {
     handledEndRef.current = false;
-    setSession((prev) => ({ ...prev, startedAt: Date.now(), isRunning: true }));
+    const t = Date.now();
+    setNow(t);
+    setSession((prev) => ({ ...prev, startedAt: t, isRunning: true }));
   }, []);
 
   const pause = useCallback(() => {
@@ -109,7 +115,9 @@ export function FocusProvider({ children }: { children: React.ReactNode }) {
 
   const resume = useCallback(() => {
     handledEndRef.current = false;
-    setSession((prev) => ({ ...prev, startedAt: Date.now(), isRunning: true }));
+    const t = Date.now();
+    setNow(t);
+    setSession((prev) => ({ ...prev, startedAt: t, isRunning: true }));
   }, []);
 
   const reset = useCallback(() => {
