@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
 import UserAvatar from "@/components/ui/UserAvatar";
-import { activeStreak } from "@/lib/streak";
+import { activeStreak } from "@/lib/Streak";
 
 interface LeaderboardRow {
   user_id: string;
