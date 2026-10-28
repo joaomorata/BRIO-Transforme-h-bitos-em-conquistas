@@ -15,8 +15,9 @@ export default function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
     description: task?.description || "",
     category: task?.category || "study" as Task["category"],
     priority: task?.priority || "medium" as Task["priority"],
-    xp_reward: task?.xp_reward || 10,
-    pomodoros_target: task?.pomodoros_target || 4,
+    // Campos mantidos só para não quebrar o formato salvo; não são mais editáveis.
+    xp_reward: task?.xp_reward ?? 10,
+    pomodoros_target: task?.pomodoros_target ?? 0,
     due_date: task?.due_date || "",
   });
 
@@ -68,7 +69,7 @@ export default function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
           />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs text-muted-foreground block mb-1">Categoria</label>
             <select
@@ -94,26 +95,6 @@ export default function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
               <option value="medium">Média</option>
               <option value="high">Alta</option>
             </select>
-          </div>
-
-          <div>
-            <label className="text-xs text-muted-foreground block mb-1">XP Recompensa</label>
-            <input
-              type="number"
-              value={form.xp_reward}
-              onChange={(e) => setForm({ ...form, xp_reward: parseInt(e.target.value) || 10 })}
-              className="w-full bg-secondary/50 border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs text-muted-foreground block mb-1">Pomodoros</label>
-            <input
-              type="number"
-              value={form.pomodoros_target}
-              onChange={(e) => setForm({ ...form, pomodoros_target: parseInt(e.target.value) || 4 })}
-              className="w-full bg-secondary/50 border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
           </div>
         </div>
 

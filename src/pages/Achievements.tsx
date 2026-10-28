@@ -52,7 +52,7 @@ export default function Achievements() {
           <p className="text-sm text-muted-foreground">Desbloqueie conquistas e evolua.</p>
         </div>
         <div className="bg-card border border-border rounded-xl px-4 py-2 flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-yellow-400" />
+          <Trophy className="w-4 h-4 text-[hsl(45_90%_60%)]" />
           <span className="text-sm font-mono font-bold text-foreground">{unlocked}/{ACHIEVEMENTS.length}</span>
         </div>
       </div>
@@ -100,7 +100,6 @@ export default function Achievements() {
                 </div>
                 <div className="flex items-center justify-between mt-1.5">
                   <span className="text-[10px] text-muted-foreground">{Math.round(progress)}%</span>
-                  <span className="text-[10px] font-mono text-primary">+{ach.xp} XP</span>
                 </div>
               </div>
             </motion.div>

@@ -14,6 +14,9 @@ export interface UserProfile {
    *  system — sem o id próprio, não dá pra saber qual card marcar como selecionado
    *  quando dois temas caem na mesma cor. */
   theme?: string;
+  /** Semana (ex: "2026-W43") em que o desafio semanal foi resgatado. Fica nos metadados
+   *  da conta para valer em qualquer aparelho e sobreviver a limpar o navegador. */
+  challengeClaimedWeek?: string;
   role: "user" | "admin";
   createdAt: string;
 }
@@ -62,6 +65,7 @@ function profileFromAuthUser(authUser: User): UserProfile {
     avatarColor: metadata.avatarColor || "#f5a623",
     avatarUrl: metadata.avatarUrl || undefined,
     theme: metadata.theme || "brio_classic",
+    challengeClaimedWeek: metadata.challengeClaimedWeek || undefined,
     role: "user",
     createdAt: authUser.created_at,
   };
@@ -223,6 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (data.avatarColor !== undefined) metadata.avatarColor = data.avatarColor;
     if (data.avatarUrl !== undefined) metadata.avatarUrl = data.avatarUrl;
     if (data.theme !== undefined) metadata.theme = data.theme;
+    if (data.challengeClaimedWeek !== undefined) metadata.challengeClaimedWeek = data.challengeClaimedWeek;
 
     const { data: result, error } = await supabase.auth.updateUser({
       email: data.email && data.email !== user.email ? data.email : undefined,

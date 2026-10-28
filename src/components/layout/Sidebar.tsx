@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, ListTodo, Trophy, Timer, User, Menu, X, Zap, LogOut, Shield, BookOpen, Crown } from "lucide-react";
+import { LayoutDashboard, ListTodo, Trophy, Timer, User, Menu, X, Zap, LogOut, Shield, BookOpen, Crown, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -10,6 +10,7 @@ const navItems = [
   { path: "/tasks", icon: ListTodo, label: "Tarefas" },
   { path: "/pomodoro", icon: Timer, label: "Foco" },
   { path: "/estudar", icon: BookOpen, label: "Estudar" },
+  { path: "/assistente", icon: MessageSquare, label: "Assistente" },
   { path: "/achievements", icon: Trophy, label: "Conquistas" },
   { path: "/ranking", icon: Crown, label: "Ranking" },
   { path: "/profile", icon: User, label: "Perfil" },
@@ -25,8 +26,11 @@ export default function Sidebar({ mobileOpen, onMobileToggle }: SidebarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
+  // Espera o logout terminar antes de navegar: do contrário a rota "/" ainda
+  // via o usuário logado, mandava para /dashboard e o ProtectedRoute o jogava
+  // em /login em vez de mostrar a Landing.
+  const handleLogout = async () => {
+    await logout();
     navigate("/");
   };
 
@@ -42,7 +46,7 @@ export default function Sidebar({ mobileOpen, onMobileToggle }: SidebarProps) {
 
       <nav className="flex-1 flex flex-col items-center gap-1 w-full px-2">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
           return (
             <Link
               key={item.path}
@@ -133,7 +137,7 @@ export default function Sidebar({ mobileOpen, onMobileToggle }: SidebarProps) {
               animate={{ x: 0 }}
               exit={{ x: -80 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="lg:hidden fixed left-0 top-0 bottom-0 z-40 w-16 bg-gray-900 flex flex-col border-r border-gray-800"
+              className="lg:hidden fixed left-0 top-0 bottom-0 z-40 w-16 bg-gray-900 flex flex-col overflow-y-auto border-r border-gray-800"
             >
               {sidebarContent}
             </motion.aside>

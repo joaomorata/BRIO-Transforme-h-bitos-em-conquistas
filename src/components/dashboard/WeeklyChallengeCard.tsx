@@ -6,7 +6,7 @@ import { getWeeklyChallenge, weekKey } from "@/lib/weeklyChallenge";
 
 export default function WeeklyChallengeCard() {
   const { tasks, stats, addXP } = useApp();
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
 
   const challenge = getWeeklyChallenge();
   const progress = challenge.getProgress(tasks, stats.weekly_xp_log);
@@ -21,7 +21,7 @@ export default function WeeklyChallengeCard() {
       return null;
     }
   });
-  const alreadyClaimed = claimedWeek === currentWeek;
+  const alreadyClaimed = claimedWeek === currentWeek || user?.challengeClaimedWeek === currentWeek;
 
   const claim = () => {
     if (!reached || alreadyClaimed) return;
@@ -32,6 +32,9 @@ export default function WeeklyChallengeCard() {
       // segue sem persistir o resgate se o localStorage estiver indisponível
     }
     setClaimedWeek(currentWeek);
+    // Guarda também na conta: sem isso, limpar os dados do navegador ou entrar
+    // em outro aparelho liberava o resgate da mesma semana de novo.
+    if (user) void updateProfile({ challengeClaimedWeek: currentWeek });
   };
 
   const pct = Math.min(100, Math.round((progress / challenge.target) * 100));

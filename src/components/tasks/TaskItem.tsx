@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, Pencil, Trash2, Zap, BookOpen, Briefcase, Heart, User } from "lucide-react";
+import { CheckCircle2, Circle, Pencil, Trash2, BookOpen, Briefcase, Heart, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Task } from "@/context/AppContext";
 
@@ -15,6 +15,18 @@ const categoryLabels = {
   work: "Trabalho",
   health: "Saúde",
   personal: "Pessoal",
+};
+
+const priorityLabels = {
+  low: "Baixa",
+  medium: "Média",
+  high: "Alta",
+};
+
+const priorityBadgeStyles = {
+  low: "bg-muted text-muted-foreground",
+  medium: "bg-[hsl(45_90%_60%/0.1)] text-[hsl(45_90%_60%)]",
+  high: "bg-destructive/10 text-destructive",
 };
 
 const priorityStyles = {
@@ -72,9 +84,8 @@ export default function TaskItem({ task, onComplete, onEdit, onDelete }: TaskIte
           <Icon className="w-3 h-3" />
           {categoryLabels[task.category]}
         </span>
-        <span className="text-xs font-mono text-primary flex items-center gap-0.5">
-          <Zap className="w-3 h-3" />
-          {task.xp_reward}
+        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", priorityBadgeStyles[task.priority] ?? priorityBadgeStyles.medium)}>
+          {priorityLabels[task.priority] ?? "Média"}
         </span>
         <div className="hidden group-hover:flex items-center gap-1">
           <button

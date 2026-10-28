@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { BookOpen, HelpCircle, Clock, Plus, RotateCw } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useApp } from "@/context/AppContext";
 import type { UserStats, Task } from "@/context/AppContext";
 
 interface MetasCardProps {
@@ -11,9 +12,12 @@ interface MetasCardProps {
 export default function MetasCard({ stats, tasks }: MetasCardProps) {
   const completed = tasks.filter((t) => t.status === "completed").length;
   const total = tasks.length;
-  const pomodoros = stats.pomodoros_completed;
-  const focusHours = Math.floor(stats.total_focus_minutes / 60);
-  const focusMins = stats.total_focus_minutes % 60;
+  // Metas de "hoje" usam o contador diário — os totais de toda a vida
+  // (stats.pomodoros_completed / total_focus_minutes) deixavam a meta cheia pra sempre.
+  const { pomodorosToday } = useApp();
+  const focusMinutesToday = pomodorosToday * 25;
+  const focusHours = Math.floor(focusMinutesToday / 60);
+  const focusMins = focusMinutesToday % 60;
 
   const metas = [
     {
@@ -25,17 +29,17 @@ export default function MetasCard({ stats, tasks }: MetasCardProps) {
     },
     {
       icon: HelpCircle,
-      label: "Pomodoros realizados",
-      current: pomodoros,
+      label: "Pomodoros de hoje",
+      current: pomodorosToday,
       goal: 8,
-      desc: `${pomodoros} de 8 realizados hoje`,
+      desc: `${pomodorosToday} de 8 realizados hoje`,
     },
     {
       icon: Clock,
-      label: "Sessões de foco",
-      current: focusHours * 60 + focusMins,
+      label: "Tempo de foco hoje",
+      current: focusMinutesToday,
       goal: 60,
-      desc: `${String(focusHours).padStart(2, "0")}:${String(focusMins).padStart(2, "0")}h acumuladas`,
+      desc: `${String(focusHours).padStart(2, "0")}:${String(focusMins).padStart(2, "0")}h de foco hoje`,
     },
   ];
 

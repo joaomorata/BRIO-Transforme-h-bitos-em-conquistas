@@ -17,6 +17,9 @@ export interface Task {
   completed_at?: string;
 }
 
+// XP fixo por tarefa concluída. O campo "XP Recompensa" foi removido do formulário.
+const TASK_XP_REWARD = 10;
+
 export interface WeeklyXPEntry {
   date: string;
   xp: number;
@@ -141,6 +144,8 @@ interface AppContextType {
   updateTask: (id: string, data: Partial<Task>) => void;
   deleteTask: (id: string) => void;
   addPomodoro: () => void;
+  /** Pomodoros concluídos HOJE neste aparelho (zera sozinho a cada dia). */
+  pomodorosToday: number;
   logMood: (energy: MoodEntry["energy"], context: MoodEntry["context"]) => void;
   logQuizResult: (result: Omit<QuizResult, "id" | "finished_at">) => void;
   addExamPlan: (plan: Omit<ExamPlan, "id" | "created_at">) => void;
@@ -148,6 +153,28 @@ interface AppContextType {
 }
 
 const AppContext = createContext<AppContextType | null>(null);
+
+function pomoTodayKey(userId: string | null) {
+  return userId ? `brio_pomo_today_${userId}` : "brio_pomo_today_guest";
+}
+
+// Contagem de pomodoros do dia, guardada só neste aparelho. O banco só tem o
+// total de todos os tempos (user_stats), então as metas "de hoje" do Dashboard
+// precisam desse contador separado — senão a meta diária ficava cheia pra sempre.
+function readPomodorosToday(userId: string | null): number {
+  try {
+    const raw = localStorage.getItem(pomoTodayKey(userId));
+    if (raw) {
+      const parsed = JSON.parse(raw) as { date?: string; count?: number };
+      if (parsed.date === format(new Date(), "yyyy-MM-dd") && typeof parsed.count === "number") {
+        return parsed.count;
+      }
+    }
+  } catch {
+    // cache corrompido: começa do zero
+  }
+  return 0;
+}
 
 function statsKey(userId: string | null) {
   return userId ? `brio_stats_${userId}` : "brio_stats_guest";
@@ -193,6 +220,48 @@ function bumpPending(userId: string | null, delta: number) {
     // localStorage indisponível: segue sem persistir o contador.
   }
   return next;
+}
+
+// Fila de exclusões feitas offline. O reenvio do snapshot local (upsert) só
+// consegue criar/atualizar linhas — sem esta fila, uma tarefa apagada sem
+// internet continuava no banco e voltava para a lista no próximo carregamento.
+type DeletableTable = "tasks" | "exam_plans";
+
+function deleteQueueKey(userId: string | null) {
+  return userId ? `brio_deleted_${userId}` : "brio_deleted_guest";
+}
+
+function readDeleteQueue(userId: string | null): Record<DeletableTable, string[]> {
+  try {
+    const raw = localStorage.getItem(deleteQueueKey(userId));
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<Record<DeletableTable, string[]>>;
+      return { tasks: parsed.tasks ?? [], exam_plans: parsed.exam_plans ?? [] };
+    }
+  } catch {
+    // fila corrompida: recomeça vazia
+  }
+  return { tasks: [], exam_plans: [] };
+}
+
+function writeDeleteQueue(userId: string | null, queue: Record<DeletableTable, string[]>) {
+  try {
+    localStorage.setItem(deleteQueueKey(userId), JSON.stringify(queue));
+  } catch {
+    // localStorage indisponível: segue sem persistir a fila.
+  }
+}
+
+function queueDelete(userId: string | null, table: DeletableTable, id: string) {
+  const q = readDeleteQueue(userId);
+  if (!q[table].includes(id)) q[table].push(id);
+  writeDeleteQueue(userId, q);
+}
+
+function unqueueDelete(userId: string | null, table: DeletableTable, id: string) {
+  const q = readDeleteQueue(userId);
+  q[table] = q[table].filter((x) => x !== id);
+  writeDeleteQueue(userId, q);
 }
 
 function readLocalStats(userId: string | null): UserStats {
@@ -245,6 +314,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const userId = user?.id ?? null;
 
   const [stats, setStats] = useState<UserStats>(() => readLocalStats(userId));
+  const [pomodorosToday, setPomodorosToday] = useState<number>(() => readPomodorosToday(userId));
+  useEffect(() => {
+    setPomodorosToday(readPomodorosToday(userId));
+  }, [userId]);
   const [tasks, setTasks] = useState<Task[]>(() => readLocalTasks(userId));
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>(() => readLocalMood(userId));
   const [quizResults, setQuizResults] = useState<QuizResult[]>(() => readLocalQuiz(userId));
@@ -333,6 +406,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               { onConflict: "user_id" }
             );
           if (statsErr) throw statsErr;
+
+          // Exclusões feitas offline vêm antes dos upserts.
+          const queued = readDeleteQueue(userId);
+          if (queued.tasks.length > 0) {
+            const { error: delErr } = await supabase.from("tasks").delete().in("id", queued.tasks);
+            if (delErr) throw delErr;
+          }
+          if (queued.exam_plans.length > 0) {
+            const { error: delErr } = await supabase.from("exam_plans").delete().in("id", queued.exam_plans);
+            if (delErr) throw delErr;
+          }
+          writeDeleteQueue(userId, { tasks: [], exam_plans: [] });
 
           const localTasksSnap = readLocalTasks(userId);
           if (localTasksSnap.length > 0) {
@@ -583,6 +668,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const pushTaskDelete = useCallback((taskId: string) => {
     const uid = userIdRef.current;
     if (!uid) return;
+    queueDelete(uid, "tasks", taskId);
     bumpPending(uid, 1);
     setSyncStatus("syncing");
     supabase
@@ -590,7 +676,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .delete()
       .eq("id", taskId)
       .then(({ error }) => {
-        if (!error) bumpPending(uid, -1);
+        if (!error) {
+          unqueueDelete(uid, "tasks", taskId);
+          bumpPending(uid, -1);
+        }
         setSyncStatus(error ? "offline" : "synced");
       });
   }, []);
@@ -640,6 +729,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const pushExamPlanDelete = useCallback((id: string) => {
     const uid = userIdRef.current;
     if (!uid) return;
+    queueDelete(uid, "exam_plans", id);
     bumpPending(uid, 1);
     setSyncStatus("syncing");
     supabase
@@ -647,7 +737,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .delete()
       .eq("id", id)
       .then(({ error }) => {
-        if (!error) bumpPending(uid, -1);
+        if (!error) {
+          unqueueDelete(uid, "exam_plans", id);
+          bumpPending(uid, -1);
+        }
         setSyncStatus(error ? "offline" : "synced");
       });
   }, []);
@@ -706,7 +799,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       setStats((prev) => {
         const withCount = { ...prev, tasks_completed: prev.tasks_completed + 1 };
-        const next = applyXP(withCount, task.xp_reward);
+        const next = applyXP(withCount, TASK_XP_REWARD);
         pushStats(next);
         return next;
       });
@@ -797,6 +890,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   const addPomodoro = useCallback(() => {
+    const uid = userIdRef.current;
+    const todayCount = readPomodorosToday(uid) + 1;
+    try {
+      localStorage.setItem(
+        pomoTodayKey(uid),
+        JSON.stringify({ date: format(new Date(), "yyyy-MM-dd"), count: todayCount })
+      );
+    } catch {
+      // sem localStorage: segue só em memória
+    }
+    setPomodorosToday(todayCount);
     setStats((prev) => {
       const withPomo = {
         ...prev,
@@ -835,6 +939,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateTask,
         deleteTask,
         addPomodoro,
+        pomodorosToday,
         logMood,
         logQuizResult,
         addExamPlan,

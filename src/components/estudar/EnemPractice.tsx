@@ -269,7 +269,7 @@ export default function EnemPractice() {
             Questão {index + 1} de {questions.length} · ENEM {year}
           </span>
           <span>
-            Acertos: {score}/{index}
+            Acertos: {score}/{index + (selected ? 1 : 0)}
           </span>
         </div>
 
@@ -277,7 +277,7 @@ export default function EnemPractice() {
           {contextText && (
             <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{contextText}</p>
           )}
-          {current.files.map((url) => (
+          {(current.files ?? []).map((url) => (
             <img
               key={url}
               src={url}

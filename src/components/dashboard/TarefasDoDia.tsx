@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, Circle, ListTodo, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/context/AppContext";
 import type { Task } from "@/context/AppContext";
@@ -12,7 +13,14 @@ interface TarefasDoDiaProps {
 
 export default function TarefasDoDia({ tasks }: TarefasDoDiaProps) {
   const { addTask } = useApp();
-  const todayTasks = tasks.slice(0, 6);
+  // "Do dia": primeiro o que ainda está pendente, depois o que foi concluído hoje.
+  // Antes eram só as 6 mais recentes, o que empurrava tarefas pendentes antigas
+  // pra fora da lista e mostrava concluídas de dias atrás.
+  const pendingTasks = tasks.filter((t) => t.status !== "completed");
+  const doneToday = tasks.filter(
+    (t) => t.status === "completed" && t.completed_at && isToday(new Date(t.completed_at))
+  );
+  const todayTasks = [...pendingTasks, ...doneToday].slice(0, 6);
   const [quickTitle, setQuickTitle] = useState("");
 
   const handleQuickAdd = () => {
@@ -64,7 +72,6 @@ export default function TarefasDoDia({ tasks }: TarefasDoDiaProps) {
               <span className={cn("text-sm flex-1 truncate", done && "line-through text-muted-foreground")}>
                 {task.title}
               </span>
-              <span className="text-[10px] font-mono text-primary font-bold">+{task.xp_reward}xp</span>
             </motion.div>
           );
         })}

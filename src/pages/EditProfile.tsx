@@ -182,8 +182,8 @@ export default function EditProfile() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pwForm.next.length < 6) {
-      setFeedback({ type: "err", msg: "A nova senha deve ter pelo menos 6 caracteres." });
+    if (pwForm.next.length < 8) {
+      setFeedback({ type: "err", msg: "A nova senha deve ter pelo menos 8 caracteres." });
       return;
     }
     if (pwForm.next !== pwForm.confirm) {
@@ -419,7 +419,7 @@ export default function EditProfile() {
           >
             {[
               { label: "Senha atual", key: "current", placeholder: "Senha atual" },
-              { label: "Nova senha", key: "next", placeholder: "Mínimo 6 caracteres" },
+              { label: "Nova senha", key: "next", placeholder: "Mínimo 8 caracteres" },
               { label: "Confirmar nova senha", key: "confirm", placeholder: "Repita a nova senha" },
             ].map((field) => (
               <div key={field.key}>

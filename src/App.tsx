@@ -18,6 +18,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import AdminLogin from "@/pages/AdminLogin";
 import Admin from "@/pages/Admin";
 import Estudar from "@/pages/Estudar";
+import Assistente from "@/pages/Assistente";
 import Ranking from "@/pages/Ranking";
 import NotFound from "@/pages/NotFound";
 
@@ -53,6 +54,7 @@ export default function App() {
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/edit" element={<EditProfile />} />
                   <Route path="/estudar" element={<Estudar />} />
+                  <Route path="/assistente" element={<Assistente />} />
                   <Route path="/ranking" element={<Ranking />} />
                 </Route>
 

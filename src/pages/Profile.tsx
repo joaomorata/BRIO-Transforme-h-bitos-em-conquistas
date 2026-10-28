@@ -257,7 +257,6 @@ export default function Profile() {
                   </div>
                   <p className="text-xs font-bold text-foreground">{ach.title}</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">{ach.desc}</p>
-                  <p className="text-[10px] text-primary font-bold mt-1">+{ach.xp} XP</p>
                 </motion.div>
               );
             })}

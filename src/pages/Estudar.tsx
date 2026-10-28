@@ -9,6 +9,7 @@ import { ptBR } from "date-fns/locale";
 import { useApp } from "@/context/AppContext";
 import { STUDY_QUESTIONS } from "@/data/studyQuestions";
 import EnemPractice from "@/components/estudar/EnemPractice";
+import BluexPractice from "@/components/estudar/BluexPractice";
 
 const SUBJECTS = [
   { id: 17, label: "Ciências", icon: Atom },
@@ -65,7 +66,7 @@ interface Question {
 }
 
 type Screen = "select" | "loading" | "quiz" | "result";
-type PageView = "practice" | "examMode" | "enem";
+type PageView = "practice" | "examMode" | "enem" | "vestibular";
 
 export default function Estudar() {
   const { addXP, logQuizResult, examPlans, quizResults, addExamPlan, deleteExamPlan } = useApp();
@@ -187,6 +188,14 @@ export default function Estudar() {
           ENEM
         </button>
         <button
+          onClick={() => setPageView("vestibular")}
+          className={`flex-1 h-9 rounded-lg text-sm font-semibold transition-colors ${
+            pageView === "vestibular" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Vestibular
+        </button>
+        <button
           onClick={() => setPageView("examMode")}
           className={`flex-1 h-9 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
             pageView === "examMode" ? "bg-primary text-white" : "text-muted-foreground hover:text-foreground"
@@ -198,6 +207,7 @@ export default function Estudar() {
       </div>
 
       {pageView === "enem" && <EnemPractice />}
+      {pageView === "vestibular" && <BluexPractice />}
 
       {pageView === "examMode" ? (
         <div className="space-y-5">

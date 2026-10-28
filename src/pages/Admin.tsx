@@ -1,74 +1,140 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Shield, Users, CheckCircle2, Zap, Timer, Crown,
-  Trash2, UserCheck, UserX, BarChart3, Activity
+  BarChart3, Activity, Loader2, WifiOff, Flame, Send,
 } from "lucide-react";
 import { useApp, calculateLevel } from "@/context/AppContext";
-import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabaseClient";
+import { activeStreak } from "@/lib/streak";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import UserAvatar from "@/components/ui/UserAvatar";
 
-interface StoredUser {
-  id: string;
-  name: string;
-  email: string;
-  bio: string;
-  avatarColor: string;
-  role: "user" | "admin";
-  createdAt: string;
-  passwordHash: string;
+// Os dados da plataforma vêm da tabela user_stats (Supabase) — a mesma do
+// Ranking, legível por qualquer usuário logado. Antes esta tela lia uma lista de
+// usuários do localStorage (do login antigo, nunca mais gravada), então mostrava
+// sempre "0 usuários", e os totais eram só os da própria conta admin.
+// Promover/remover admin e apagar contas NÃO é feito por aqui: por segurança a
+// tabela `admins` só pode ser alterada via SQL (supabase/tornar_admin.sql).
+interface PlatformUser {
+  user_id: string;
+  email?: string | null;
+  display_name: string | null;
+  avatar_color: string | null;
+  avatar_url: string | null;
+  total_xp: number;
+  level: number;
+  current_streak: number;
+  best_streak: number;
+  tasks_completed: number;
+  pomodoros_completed: number;
+  total_focus_minutes: number;
+  last_active_date: string | null;
 }
 
-function loadAllUsers(): StoredUser[] {
-  try {
-    const raw = localStorage.getItem("brio_users");
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveAllUsers(users: StoredUser[]) {
-  localStorage.setItem("brio_users", JSON.stringify(users));
-}
-
-const TABS = ["Visão Geral", "Usuários", "Tarefas"] as const;
+const TABS = ["Visão Geral", "Usuários", "Minhas tarefas"] as const;
 type TabType = typeof TABS[number];
 
 export default function Admin() {
   const { stats, tasks } = useApp();
-  const { user: currentUser } = useAuth();
   const [tab, setTab] = useState<TabType>("Visão Geral");
-  const [users, setUsers] = useState<StoredUser[]>(loadAllUsers);
+  const [users, setUsers] = useState<PlatformUser[] | null>(null);
+  const [error, setError] = useState(false);
 
-  const completedTasks = tasks.filter((t) => t.status === "completed").length;
-  const pendingTasks = tasks.filter((t) => t.status !== "completed").length;
-  const totalXPFromTasks = tasks.filter((t) => t.status === "completed").reduce((s, t) => s + t.xp_reward, 0);
+  // Enviar tarefa para um usuário (o admin pode criar tarefas para qualquer conta
+  // — exige a política tasks_insert_admin do SQL).
+  const emptyAssign = { title: "", description: "", category: "study", priority: "medium", due_date: "" };
+  const [assignTo, setAssignTo] = useState<string | null>(null);
+  const [assignForm, setAssignForm] = useState(emptyAssign);
+  const [assignBusy, setAssignBusy] = useState(false);
+  const [assignMsg, setAssignMsg] = useState("");
+
+  const submitAssign = async (userId: string) => {
+    const title = assignForm.title.trim();
+    if (!title) return;
+    setAssignBusy(true);
+    setAssignMsg("");
+    const { error: insertError } = await supabase.from("tasks").insert({
+      id: crypto.randomUUID(),
+      user_id: userId,
+      title,
+      description: assignForm.description.trim() || null,
+      category: assignForm.category,
+      priority: assignForm.priority,
+      status: "pending",
+      xp_reward: 10,
+      pomodoros_target: 0,
+      due_date: assignForm.due_date || null,
+      created_at: new Date().toISOString(),
+    });
+    setAssignBusy(false);
+    if (insertError) {
+      setAssignMsg("Não foi possível enviar. Confirme se o SQL de permissão para admin foi rodado.");
+      return;
+    }
+    setAssignForm(emptyAssign);
+    setAssignMsg("Tarefa enviada. O usuário vê na próxima vez que abrir o app.");
+  };
+
+  // Lista todos os cadastrados (auth.users) via função admin_list_users, que
+  // confere a tabela admins no próprio banco. Antes lia só user_stats: quem nunca
+  // gerou linha ali (cadastrado e nunca sincronizado) não aparecia, e a tela
+  // mostrava "Usuários cadastrados (0)".
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error: rpcError } = await supabase.rpc("admin_list_users");
+      if (cancelled) return;
+      if (!rpcError && Array.isArray(data)) {
+        setUsers(data as PlatformUser[]);
+        return;
+      }
+      // Fallback enquanto o SQL de admin_list_users não foi rodado no Supabase.
+      const { data: rows, error: fetchError } = await supabase
+        .from("user_stats")
+        .select(
+          "user_id, display_name, avatar_color, avatar_url, total_xp, level, current_streak, best_streak, tasks_completed, pomodoros_completed, total_focus_minutes, last_active_date"
+        )
+        .order("total_xp", { ascending: false })
+        .limit(1000);
+      if (cancelled) return;
+      if (fetchError) {
+        setError(true);
+        return;
+      }
+      setUsers((rows as PlatformUser[]) ?? []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const totals = useMemo(() => {
+    const list = users ?? [];
+    const today = format(new Date(), "yyyy-MM-dd");
+    const weekAgo = format(subDays(new Date(), 6), "yyyy-MM-dd");
+    return {
+      users: list.length,
+      tasks: list.reduce((s, u) => s + u.tasks_completed, 0),
+      xp: list.reduce((s, u) => s + u.total_xp, 0),
+      pomodoros: list.reduce((s, u) => s + u.pomodoros_completed, 0),
+      focusMinutes: list.reduce((s, u) => s + u.total_focus_minutes, 0),
+      activeToday: list.filter((u) => u.last_active_date === today).length,
+      activeWeek: list.filter((u) => u.last_active_date && u.last_active_date >= weekAgo).length,
+      avgLevel: list.length ? Math.round(list.reduce((s, u) => s + u.level, 0) / list.length) : 0,
+    };
+  }, [users]);
 
   const summaryCards = [
-    { icon: Users, label: "Usuários cadastrados", value: users.length, colorText: "text-primary", colorBg: "bg-primary/10" },
-    { icon: CheckCircle2, label: "Tarefas concluídas", value: completedTasks, colorText: "text-accent", colorBg: "bg-accent/10" },
-    { icon: Zap, label: "XP Total gerado", value: stats.total_xp, colorText: "text-[hsl(45_90%_60%)]", colorBg: "bg-[hsl(45_90%_60%/0.1)]" },
-    { icon: Timer, label: "Pomodoros totais", value: stats.pomodoros_completed, colorText: "text-[hsl(330_80%_60%)]", colorBg: "bg-[hsl(330_80%_60%/0.1)]" },
+    { icon: Users, label: "Usuários cadastrados", value: totals.users, colorText: "text-primary", colorBg: "bg-primary/10" },
+    { icon: CheckCircle2, label: "Tarefas concluídas", value: totals.tasks, colorText: "text-accent", colorBg: "bg-accent/10" },
+    { icon: Zap, label: "XP Total gerado", value: totals.xp, colorText: "text-[hsl(45_90%_60%)]", colorBg: "bg-[hsl(45_90%_60%/0.1)]" },
+    { icon: Timer, label: "Pomodoros totais", value: totals.pomodoros, colorText: "text-[hsl(330_80%_60%)]", colorBg: "bg-[hsl(330_80%_60%/0.1)]" },
   ];
 
-  const toggleRole = (userId: string) => {
-    if (userId === currentUser?.id) return;
-    const updated = users.map((u) =>
-      u.id === userId ? { ...u, role: (u.role === "admin" ? "user" : "admin") as "user" | "admin" } : u
-    );
-    setUsers(updated);
-    saveAllUsers(updated);
-  };
-
-  const deleteUser = (userId: string) => {
-    if (userId === currentUser?.id) return;
-    const updated = users.filter((u) => u.id !== userId);
-    setUsers(updated);
-    saveAllUsers(updated);
-  };
+  const loading = users === null && !error;
 
   return (
     <div className="space-y-6">
@@ -98,13 +164,28 @@ export default function Admin() {
           >
             {t === "Visão Geral" && <BarChart3 className="w-3.5 h-3.5 inline mr-1.5" />}
             {t === "Usuários" && <Users className="w-3.5 h-3.5 inline mr-1.5" />}
-            {t === "Tarefas" && <Activity className="w-3.5 h-3.5 inline mr-1.5" />}
+            {t === "Minhas tarefas" && <Activity className="w-3.5 h-3.5 inline mr-1.5" />}
             {t}
           </button>
         ))}
       </div>
 
-      {tab === "Visão Geral" && (
+      {tab !== "Minhas tarefas" && error && (
+        <div className="bg-card border border-border rounded-2xl p-6 flex flex-col items-center gap-2 text-center">
+          <WifiOff className="w-5 h-5 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            Não foi possível carregar os dados da plataforma agora. O painel precisa de internet.
+          </p>
+        </div>
+      )}
+
+      {tab !== "Minhas tarefas" && loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {tab === "Visão Geral" && users !== null && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {summaryCards.map((card, i) => (
@@ -126,140 +207,192 @@ export default function Admin() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="bg-card border border-border rounded-2xl p-4">
-              <p className="text-xs text-muted-foreground mb-2 font-medium">Tarefas por status</p>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-foreground">Concluídas</span>
-                  <span className="text-xs font-bold text-accent">{completedTasks}</span>
-                </div>
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-accent rounded-full"
-                    style={{ width: tasks.length ? `${(completedTasks / tasks.length) * 100}%` : "0%" }}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-foreground">Pendentes</span>
-                  <span className="text-xs font-bold text-[hsl(45_90%_60%)]">{pendingTasks}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border rounded-2xl p-4">
-              <p className="text-xs text-muted-foreground mb-2 font-medium">Resumo do usuário</p>
+              <p className="text-xs text-muted-foreground mb-2 font-medium">Atividade</p>
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Nível atual</span>
-                  <span className="font-bold text-primary">{calculateLevel(stats.total_xp)}</span>
+                  <span className="text-muted-foreground">Ativos hoje</span>
+                  <span className="font-bold text-accent">{totals.activeToday}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Streak</span>
-                  <span className="font-bold text-[hsl(45_90%_60%)]">{stats.current_streak} dias</span>
+                  <span className="text-muted-foreground">Ativos nos últimos 7 dias</span>
+                  <span className="font-bold text-foreground">{totals.activeWeek}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">Minutos de foco</span>
-                  <span className="font-bold text-[hsl(330_80%_60%)]">{stats.total_focus_minutes}min</span>
-                </div>
-                <div className="flex justify-between text-xs">
-                  <span className="text-muted-foreground">XP de tarefas</span>
-                  <span className="font-bold text-[hsl(200_80%_55%)]">{totalXPFromTasks}</span>
+                  <span className="text-muted-foreground">Nível médio</span>
+                  <span className="font-bold text-primary">{totals.avgLevel}</span>
                 </div>
               </div>
             </div>
 
             <div className="bg-card border border-border rounded-2xl p-4">
-              <p className="text-xs text-muted-foreground mb-2 font-medium">Categorias de tarefas</p>
-              {(["study", "work", "health", "personal"] as const).map((cat) => {
-                const count = tasks.filter((t) => t.category === cat).length;
-                const labels = { study: "Estudo", work: "Trabalho", health: "Saúde", personal: "Pessoal" };
-                return (
-                  <div key={cat} className="flex justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">{labels[cat]}</span>
-                    <span className="font-bold text-foreground">{count}</span>
-                  </div>
-                );
-              })}
+              <p className="text-xs text-muted-foreground mb-2 font-medium">Foco e engajamento</p>
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Minutos de foco (total)</span>
+                  <span className="font-bold text-[hsl(330_80%_60%)]">{totals.focusMinutes}min</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">XP médio por usuário</span>
+                  <span className="font-bold text-[hsl(45_90%_60%)]">
+                    {totals.users ? Math.round(totals.xp / totals.users) : 0}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">Maior streak atual</span>
+                  <span className="font-bold text-[hsl(200_80%_55%)]">
+                    {Math.max(0, ...users.map((u) => activeStreak(u.current_streak, u.last_active_date)))} dias
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-2xl p-4">
+              <p className="text-xs text-muted-foreground mb-2 font-medium">Top 3 por XP</p>
+              {users.slice(0, 3).map((u, i) => (
+                <div key={u.user_id} className="flex justify-between text-xs mb-1">
+                  <span className="text-muted-foreground truncate pr-2">
+                    {i + 1}. {u.display_name || "Estudante"}
+                  </span>
+                  <span className="font-bold text-foreground shrink-0">{u.total_xp} XP</span>
+                </div>
+              ))}
+              {users.length === 0 && <p className="text-xs text-muted-foreground">Sem dados ainda.</p>}
             </div>
           </div>
         </motion.div>
       )}
 
-      {tab === "Usuários" && (
+      {tab === "Usuários" && users !== null && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-4 h-4 text-muted-foreground" />
             <h2 className="text-sm font-semibold text-foreground">Usuários cadastrados ({users.length})</h2>
           </div>
           <div className="space-y-2">
-            {users.map((u, i) => (
-              <motion.div
-                key={u.id}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40 border border-border"
-              >
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-sm font-bold text-white"
-                  style={{ backgroundColor: u.avatarColor || "hsl(250 85% 65%)" }}
+            {users.map((u, i) => {
+              const streak = activeStreak(u.current_streak, u.last_active_date);
+              return (
+                <div key={u.user_id} className="space-y-2">
+                <motion.div
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: Math.min(i, 15) * 0.03 }}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-secondary/40 border border-border"
                 >
-                  {u.name.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-foreground truncate">{u.name}</p>
-                    {u.id === currentUser?.id && (
-                      <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">Você</span>
-                    )}
+                  <UserAvatar url={u.avatar_url} color={u.avatar_color} name={u.display_name} size={36} className="rounded-xl text-sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{u.display_name || "Estudante"}</p>
+                    {u.email && <p className="text-[10px] text-muted-foreground truncate">{u.email}</p>}
+                    <p className="text-[10px] text-muted-foreground">
+                      Nível {calculateLevel(u.total_xp)} · {u.tasks_completed} tarefas · {u.pomodoros_completed} pomodoros
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {u.last_active_date
+                        ? `Última atividade ${format(new Date(`${u.last_active_date}T12:00:00`), "dd MMM yyyy", { locale: ptBR })}`
+                        : "Sem atividade"}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">{u.email}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    Desde {format(new Date(u.createdAt), "dd MMM yyyy", { locale: ptBR })}
-                  </p>
-                </div>
-                <span className={cn(
-                  "flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full",
-                  u.role === "admin" ? "text-[hsl(45_90%_60%)] bg-[hsl(45_90%_60%/0.1)]" : "text-muted-foreground bg-muted"
-                )}>
-                  {u.role === "admin" ? <><Crown className="w-3 h-3" /> Admin</> : "Usuário"}
-                </span>
-                {u.id !== currentUser?.id && (
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => toggleRole(u.id)}
-                      title={u.role === "admin" ? "Remover admin" : "Tornar admin"}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-primary/10 transition-colors"
-                    >
-                      {u.role === "admin" ? (
-                        <UserX className="w-3.5 h-3.5 text-muted-foreground" />
-                      ) : (
-                        <UserCheck className="w-3.5 h-3.5 text-muted-foreground" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => deleteUser(u.id)}
-                      title="Remover usuário"
-                      className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-destructive/10 transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                    </button>
-                  </div>
+                  {streak > 0 && (
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-[hsl(45_90%_60%)] bg-[hsl(45_90%_60%/0.1)] px-2 py-0.5 rounded-full">
+                      <Flame className="w-3 h-3" /> {streak}d
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAssignMsg("");
+                      setAssignTo(assignTo === u.user_id ? null : u.user_id);
+                    }}
+                    className="text-[10px] font-semibold text-primary hover:underline shrink-0"
+                  >
+                    Atribuir tarefa
+                  </button>
+                  <span className="text-xs font-mono text-primary font-bold shrink-0">{u.total_xp} XP</span>
+                </motion.div>
+                {assignTo === u.user_id && (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      submitAssign(u.user_id);
+                    }}
+                    className="ml-4 p-3 rounded-xl border border-border bg-card space-y-2"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Título da tarefa"
+                      value={assignForm.title}
+                      onChange={(e) => setAssignForm({ ...assignForm, title: e.target.value })}
+                      required
+                      className="w-full bg-secondary/50 border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                    <textarea
+                      placeholder="Descrição (opcional)"
+                      value={assignForm.description}
+                      onChange={(e) => setAssignForm({ ...assignForm, description: e.target.value })}
+                      className="w-full bg-secondary/50 border border-border rounded-xl px-3 py-2 text-sm text-foreground h-16 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
+                    <div className="grid grid-cols-3 gap-2">
+                      <select
+                        value={assignForm.category}
+                        onChange={(e) => setAssignForm({ ...assignForm, category: e.target.value })}
+                        className="w-full bg-secondary/50 border border-border rounded-xl px-2 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      >
+                        <option value="study">Estudo</option>
+                        <option value="work">Trabalho</option>
+                        <option value="health">Saúde</option>
+                        <option value="personal">Pessoal</option>
+                      </select>
+                      <select
+                        value={assignForm.priority}
+                        onChange={(e) => setAssignForm({ ...assignForm, priority: e.target.value })}
+                        className="w-full bg-secondary/50 border border-border rounded-xl px-2 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      >
+                        <option value="low">Baixa</option>
+                        <option value="medium">Média</option>
+                        <option value="high">Alta</option>
+                      </select>
+                      <input
+                        type="date"
+                        value={assignForm.due_date}
+                        onChange={(e) => setAssignForm({ ...assignForm, due_date: e.target.value })}
+                        className="w-full bg-secondary/50 border border-border rounded-xl px-2 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      />
+                    </div>
+                    {assignMsg && <p className="text-[10px] text-muted-foreground">{assignMsg}</p>}
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={assignBusy}
+                        className="h-8 px-3 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white rounded-xl text-xs font-semibold inline-flex items-center gap-1.5"
+                      >
+                        <Send className="w-3 h-3" /> Enviar tarefa
+                      </button>
+                    </div>
+                  </form>
                 )}
-              </motion.div>
-            ))}
+                </div>
+              );
+            })}
             {users.length === 0 && (
               <p className="text-sm text-muted-foreground py-8 text-center">Nenhum usuário cadastrado.</p>
             )}
           </div>
+          <p className="text-[10px] text-muted-foreground mt-4">
+            Para promover ou remover administradores, use o SQL em supabase/tornar_admin.sql.
+          </p>
         </motion.div>
       )}
 
-      {tab === "Tarefas" && (
+      {tab === "Minhas tarefas" && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card border border-border rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-1">
             <Activity className="w-4 h-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">Todas as tarefas ({tasks.length})</h2>
+            <h2 className="text-sm font-semibold text-foreground">Tarefas da sua conta ({tasks.length})</h2>
           </div>
+          <p className="text-[10px] text-muted-foreground mb-4">
+            Por privacidade, cada usuário só enxerga as próprias tarefas — aqui aparecem apenas as da conta admin
+            (nível {calculateLevel(stats.total_xp)}, {stats.tasks_completed} concluídas).
+          </p>
           <div className="space-y-2">
             {tasks.map((task, i) => (
               <motion.div
@@ -290,7 +423,6 @@ export default function Admin() {
                 )}>
                   {task.priority === "high" ? "Alta" : task.priority === "medium" ? "Média" : "Baixa"}
                 </span>
-                <span className="text-xs font-mono text-primary font-bold">+{task.xp_reward} XP</span>
               </motion.div>
             ))}
             {tasks.length === 0 && (

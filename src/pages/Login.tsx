@@ -100,9 +100,11 @@ export default function Login() {
     setSuccess("");
   };
 
-  const fillDemo = (type: "user" | "admin") => {
-    setEmail(type === "admin" ? "admin@brio.app" : "demo@brio.app");
-    setPassword(type === "admin" ? "admin123" : "demo1234");
+  // Só existe atalho para a conta demo comum. Credenciais de admin nunca devem
+  // ficar escritas no código do front-end (qualquer pessoa consegue ler o bundle).
+  const fillDemo = () => {
+    setEmail("demo@brio.app");
+    setPassword("demo1234");
     setError("");
   };
 
@@ -402,7 +404,7 @@ export default function Login() {
           {mode === "login" && (
             <motion.button
               type="button"
-              onClick={() => fillDemo("user")}
+              onClick={() => fillDemo()}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: prefersReducedMotion ? 0 : 0.3, duration: 0.3 }}
