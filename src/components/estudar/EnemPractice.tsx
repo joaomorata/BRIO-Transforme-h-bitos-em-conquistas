@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, CheckCircle2, XCircle, RotateCcw, WifiOff, GraduationCap } from "lucide-react";
+import {
+  Loader2, CheckCircle2, XCircle, RotateCcw, WifiOff, GraduationCap, Sparkles, Play, Trophy,
+} from "lucide-react";
 import { useApp } from "@/context/AppContext";
+import { supabase } from "@/lib/supabaseClient";
+import { cn } from "@/lib/utils";
 
 const ENEM_YEARS = Array.from({ length: 2023 - 2009 + 1 }, (_, i) => 2023 - i);
 
+// Rótulos curtos para os botões; o nome completo aparece na etiqueta da questão.
 const DISCIPLINES = [
-  { value: "", label: "Todas as áreas" },
-  { value: "linguagens", label: "Linguagens, Códigos e suas Tecnologias" },
-  { value: "ciencias-humanas", label: "Ciências Humanas e suas Tecnologias" },
-  { value: "ciencias-natureza", label: "Ciências da Natureza e suas Tecnologias" },
-  { value: "matematica", label: "Matemática e suas Tecnologias" },
+  { value: "", label: "Todas", full: "Todas as áreas" },
+  { value: "linguagens", label: "Linguagens", full: "Linguagens, Códigos e suas Tecnologias" },
+  { value: "ciencias-humanas", label: "Humanas", full: "Ciências Humanas e suas Tecnologias" },
+  { value: "ciencias-natureza", label: "Natureza", full: "Ciências da Natureza e suas Tecnologias" },
+  { value: "matematica", label: "Matemática", full: "Matemática e suas Tecnologias" },
 ];
 
 // IDs sintéticos (negativos) para não colidir com os IDs do banco local de questões.
@@ -21,6 +26,8 @@ const DISCIPLINE_SUBJECT_ID: Record<string, number> = {
   "ciencias-natureza": -4,
   matematica: -5,
 };
+
+const QUANTITY_OPTIONS = [5, 10, 20, 30];
 
 interface EnemAlternative {
   letter: "A" | "B" | "C" | "D" | "E";
@@ -75,7 +82,13 @@ export default function EnemPractice() {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
+  const [quantity, setQuantity] = useState(QUESTIONS_PER_SESSION);
   const [errorMsg, setErrorMsg] = useState("");
+  const [explanation, setExplanation] = useState("");
+  const [explaining, setExplaining] = useState(false);
+  const [explainError, setExplainError] = useState("");
+
+  const disciplineInfo = DISCIPLINES.find((d) => d.value === discipline) ?? DISCIPLINES[0];
 
   const fetchQuestions = async () => {
     setScreen("loading");
@@ -113,11 +126,13 @@ export default function EnemPractice() {
         return;
       }
 
-      const picked = shuffle(pool).slice(0, QUESTIONS_PER_SESSION);
+      const picked = shuffle(pool).slice(0, quantity);
       setQuestions(picked);
       setIndex(0);
       setScore(0);
       setSelected(null);
+      setExplanation("");
+      setExplainError("");
       setScreen("quiz");
     } catch {
       setErrorMsg(
@@ -137,13 +152,51 @@ export default function EnemPractice() {
     }
   };
 
+  // Manda a questão e a alternativa marcada para o assistente, que explica o erro.
+  // Imagens não são enviadas: a explicação usa só o texto da questão.
+  const explain = async () => {
+    if (!current || !selected || explaining) return;
+    setExplaining(true);
+    setExplainError("");
+    setExplanation("");
+
+    const contexto = cleanContext(current.context);
+    const alternativasTexto = current.alternatives
+      .map((alt) => `${alt.letter}) ${alt.text ? cleanContext(alt.text) : "(alternativa em imagem)"}`)
+      .join("\n");
+    const temImagem = (current.files ?? []).length > 0 || current.alternatives.some((a) => a.file);
+
+    const message = [
+      `Questão do ENEM ${current.year}${current.discipline ? ` (${current.discipline})` : ""}.`,
+      contexto ? `Enunciado: ${contexto}` : "",
+      current.alternativesIntroduction ? current.alternativesIntroduction : "",
+      `Alternativas:\n${alternativasTexto}`,
+      `Gabarito oficial: ${current.correctAlternative}. Eu marquei ${selected}.`,
+      temImagem ? "(A questão tem imagens que não foram enviadas; explique com base no texto disponível.)" : "",
+      `Explique por que a alternativa ${current.correctAlternative} está certa e por que a ${selected} está errada. Seja objetivo, em português, em texto simples, sem Markdown e sem asteriscos.`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    const { data, error } = await supabase.functions.invoke("assistente", { body: { message } });
+    setExplaining(false);
+
+    const serverMsg = (data as { error?: string } | null)?.error;
+    if (error || serverMsg || !data?.reply) {
+      setExplainError(serverMsg || "Não foi possível gerar a explicação agora. Tente de novo.");
+      return;
+    }
+    setExplanation(String(data.reply));
+  };
+
   const nextQuestion = () => {
+    setExplanation("");
+    setExplainError("");
     if (index + 1 >= questions.length) {
       const subjectId = DISCIPLINE_SUBJECT_ID[discipline] ?? -1;
-      const disciplineLabel = DISCIPLINES.find((d) => d.value === discipline)?.label ?? "Todas as áreas";
       logQuizResult({
         subject_id: subjectId,
-        subject_label: `ENEM ${year} · ${disciplineLabel}`,
+        subject_label: `ENEM ${year} · ${disciplineInfo.full}`,
         correct: score,
         total: questions.length,
         difficulty: "hard",
@@ -158,30 +211,30 @@ export default function EnemPractice() {
 
   if (screen === "select" || screen === "error") {
     return (
-      <div className="space-y-5">
-        <div className="bg-card border border-border rounded-2xl p-6">
-          <div className="flex items-center gap-2 mb-1">
-            <GraduationCap className="w-4 h-4 text-primary" />
-            <p className="text-sm font-semibold text-foreground">Questões reais do ENEM</p>
+      <div className="space-y-4">
+        <div className="bg-card border border-border rounded-2xl p-5 space-y-5">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
+              <GraduationCap className="w-5 h-5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">Questões reais do ENEM</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Buscadas ao vivo da{" "}
+                <a href="https://enem.dev" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                  api.enem.dev
+                </a>
+                . Precisa de internet.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground mb-4">
-            Buscadas ao vivo da{" "}
-            <a
-              href="https://enem.dev"
-              target="_blank"
-              rel="noreferrer"
-              className="text-primary hover:underline"
-            >
-              api.enem.dev
-            </a>{" "}
-            — projeto aberto com provas de 2009 a 2023. Precisa de internet.
-          </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="space-y-2">
+            <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">Prova</p>
             <select
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="flex-1 h-11 rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full h-11 rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             >
               {ENEM_YEARS.map((y) => (
                 <option key={y} value={y}>
@@ -189,33 +242,70 @@ export default function EnemPractice() {
                 </option>
               ))}
             </select>
-            <select
-              value={discipline}
-              onChange={(e) => setDiscipline(e.target.value)}
-              className="flex-1 h-11 rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-            >
-              {DISCIPLINES.map((d) => (
-                <option key={d.value} value={d.value}>
-                  {d.label}
-                </option>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">Área</p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {DISCIPLINES.map((d) => {
+                const active = discipline === d.value;
+                return (
+                  <button
+                    key={d.value || "all"}
+                    onClick={() => setDiscipline(d.value)}
+                    className={cn(
+                      "h-10 rounded-xl border text-xs font-semibold transition-colors",
+                      active
+                        ? "bg-primary text-white border-primary"
+                        : "bg-secondary/40 border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                    )}
+                  >
+                    {d.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">Quantidade</p>
+            <div className="grid grid-cols-4 gap-2">
+              {QUANTITY_OPTIONS.map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setQuantity(n)}
+                  className={cn(
+                    "h-10 rounded-xl border text-sm font-semibold transition-colors",
+                    quantity === n
+                      ? "bg-primary text-white border-primary"
+                      : "bg-secondary/40 border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                  )}
+                >
+                  {n}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           <button
             onClick={fetchQuestions}
-            className="mt-4 w-full h-11 bg-primary hover:bg-primary/90 text-white rounded-xl font-semibold text-sm transition-all"
+            className="w-full h-11 bg-primary hover:bg-primary/90 text-white rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
           >
-            Buscar questões
+            <Play className="w-4 h-4" />
+            Buscar {quantity} questões
           </button>
         </div>
 
         {screen === "error" && (
-          <div className="bg-card border border-border rounded-2xl p-5 flex flex-col items-center gap-2 text-center">
-            <WifiOff className="w-5 h-5 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">{errorMsg}</p>
+          <div className="flex items-start gap-2 text-xs text-muted-foreground bg-card border border-border rounded-xl p-4">
+            <WifiOff className="w-4 h-4 shrink-0 mt-px" />
+            <span>{errorMsg}</span>
           </div>
         )}
+
+        <p className="text-[11px] text-muted-foreground leading-relaxed px-1">
+          Provas de 2009 a 2023. As questões vêm de um projeto aberto e não são classificadas por dificuldade.
+        </p>
       </div>
     );
   }
@@ -230,15 +320,22 @@ export default function EnemPractice() {
   }
 
   if (screen === "result") {
-    const pct = Math.round((score / questions.length) * 100);
+    const pct = questions.length ? Math.round((score / questions.length) * 100) : 0;
     return (
-      <div className="bg-card border border-border rounded-2xl p-8 text-center">
-        <p className="text-4xl font-bold text-foreground mb-1">
-          {score}/{questions.length}
-        </p>
-        <p className="text-sm text-muted-foreground mb-4">{pct}% de acerto · ENEM {year}</p>
+      <div className="bg-card border border-border rounded-2xl p-8 text-center space-y-4">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+          <Trophy className="w-7 h-7 text-primary" />
+        </div>
+        <div>
+          <p className="text-4xl font-bold text-foreground">
+            {score}/{questions.length}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {pct}% de acerto · ENEM {year}
+          </p>
+        </div>
         {score > 0 && (
-          <p className="text-sm text-primary font-semibold mb-4">+{score * XP_PER_CORRECT} XP ganhos</p>
+          <p className="text-sm text-primary font-semibold">+{score * XP_PER_CORRECT} XP ganhos</p>
         )}
         <button
           onClick={() => setScreen("select")}
@@ -254,6 +351,7 @@ export default function EnemPractice() {
   if (!current) return null;
 
   const contextText = cleanContext(current.context);
+  const progressPct = ((index + (selected ? 1 : 0)) / questions.length) * 100;
 
   return (
     <AnimatePresence mode="wait">
@@ -264,16 +362,34 @@ export default function EnemPractice() {
         exit={{ opacity: 0, x: -12 }}
         className="space-y-4"
       >
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            Questão {index + 1} de {questions.length} · ENEM {year}
-          </span>
-          <span>
-            Acertos: {score}/{index + (selected ? 1 : 0)}
-          </span>
+        {/* Progresso */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>
+              Questão <span className="font-semibold text-foreground">{index + 1}</span> de {questions.length}
+            </span>
+            <span>
+              Acertos <span className="font-semibold text-foreground">{score}</span>/{index + (selected ? 1 : 0)}
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
+          </div>
         </div>
 
+        {/* Enunciado */}
         <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-medium text-muted-foreground bg-secondary/60 border border-border rounded-full px-2.5 py-0.5">
+              ENEM {year}
+            </span>
+            {discipline && (
+              <span className="text-[11px] font-medium text-muted-foreground bg-secondary/60 border border-border rounded-full px-2.5 py-0.5">
+                {disciplineInfo.label}
+              </span>
+            )}
+          </div>
+
           {contextText && (
             <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{contextText}</p>
           )}
@@ -290,6 +406,7 @@ export default function EnemPractice() {
           )}
         </div>
 
+        {/* Alternativas */}
         <div className="space-y-2">
           {current.alternatives.map((alt) => {
             const isSelected = selected === alt.letter;
@@ -300,18 +417,25 @@ export default function EnemPractice() {
                 key={alt.letter}
                 onClick={() => handleAnswer(alt.letter)}
                 disabled={selected !== null}
-                className={`w-full text-left p-3.5 rounded-xl border transition-all flex items-start gap-3 ${
-                  showState && isCorrectAlt
-                    ? "bg-accent/10 border-accent"
-                    : showState && isSelected
-                    ? "bg-destructive/10 border-destructive"
-                    : "bg-secondary/30 border-border hover:border-primary/40"
-                }`}
+                className={cn(
+                  "w-full text-left p-3.5 rounded-xl border transition-all flex items-center gap-3",
+                  showState && isCorrectAlt && "bg-accent/10 border-accent",
+                  showState && isSelected && !isCorrectAlt && "bg-destructive/10 border-destructive",
+                  !showState && "bg-card border-border hover:border-primary/50",
+                  showState && !isCorrectAlt && !isSelected && "bg-card border-border opacity-60"
+                )}
               >
-                <span className="text-xs font-mono font-bold text-muted-foreground shrink-0 mt-0.5">
+                <span
+                  className={cn(
+                    "w-7 h-7 rounded-lg border flex items-center justify-center text-xs font-mono font-bold shrink-0",
+                    showState && isCorrectAlt && "border-accent text-accent",
+                    showState && isSelected && !isCorrectAlt && "border-destructive text-destructive",
+                    !showState && "border-border text-muted-foreground"
+                  )}
+                >
                   {alt.letter}
                 </span>
-                <span className="flex-1 text-sm text-foreground">
+                <span className="flex-1 text-sm text-foreground leading-relaxed">
                   {alt.text && <span className="whitespace-pre-wrap">{cleanContext(alt.text)}</span>}
                   {alt.file && (
                     <img src={alt.file} alt={`Alternativa ${alt.letter}`} className="max-w-full rounded-lg mt-1" />
@@ -325,6 +449,35 @@ export default function EnemPractice() {
             );
           })}
         </div>
+
+        {/* Explicação com o assistente */}
+        {selected && selected !== current.correctAlternative && !explanation && (
+          <button
+            onClick={explain}
+            disabled={explaining}
+            className="w-full h-11 bg-primary/10 hover:bg-primary/15 border border-primary/30 disabled:opacity-60 text-primary rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
+          >
+            {explaining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {explaining ? "Gerando explicação..." : "Não entendi, me explica"}
+          </button>
+        )}
+
+        {explainError && (
+          <div className="flex items-start gap-2 text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl p-3">
+            <XCircle className="w-4 h-4 shrink-0 mt-px" />
+            <span>{explainError}</span>
+          </div>
+        )}
+
+        {explanation && (
+          <div className="bg-card border border-primary/30 rounded-2xl p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <p className="text-xs font-semibold text-foreground">Explicação</p>
+            </div>
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">{explanation}</p>
+          </div>
+        )}
 
         {selected && (
           <button

@@ -42,6 +42,7 @@ const LEVELS: { value: Level; label: string; difficulty: "easy" | "medium" | "ha
 
 const LETTERS = ["A", "B", "C", "D", "E"] as const;
 const QUESTIONS_PER_SESSION = 10;
+const QUANTITY_OPTIONS = [5, 10, 20, 30];
 const XP_PER_CORRECT = 15;
 
 // Remove o prefixo "a) " das alternativas e colapsa quebras de linha/espaços vindos do PDF.
@@ -76,6 +77,7 @@ export default function BluexPractice() {
   const [screen, setScreen] = useState<Screen>("select");
   const [materia, setMateria] = useState("");
   const [assunto, setAssunto] = useState("");
+  const [quantidade, setQuantidade] = useState(QUESTIONS_PER_SESSION);
   const [level, setLevel] = useState<Level>("");
   const [questions, setQuestions] = useState<BluexQuestion[]>([]);
   const [index, setIndex] = useState(0);
@@ -134,7 +136,7 @@ export default function BluexPractice() {
   const subjectId = materia ? -(200 + materias.indexOf(materia)) : -200;
 
   const start = () => {
-    setQuestions(shuffle(pool).slice(0, QUESTIONS_PER_SESSION));
+    setQuestions(shuffle(pool).slice(0, quantidade));
     setIndex(0);
     setScore(0);
     setSelected(null);
@@ -297,6 +299,26 @@ export default function BluexPractice() {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-widest">Quantidade</p>
+            <div className="grid grid-cols-4 gap-2">
+              {QUANTITY_OPTIONS.map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setQuantidade(n)}
+                  className={cn(
+                    "h-10 rounded-xl border text-sm font-semibold transition-colors",
+                    quantidade === n
+                      ? "bg-primary text-white border-primary"
+                      : "bg-secondary/40 border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                  )}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center justify-between rounded-xl bg-secondary/40 border border-border px-4 py-3">
             <p className="text-xs text-muted-foreground">Questões com esse filtro</p>
             <p className="text-sm font-semibold text-foreground">{pool.length}</p>
@@ -308,7 +330,7 @@ export default function BluexPractice() {
             className="w-full h-11 bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
           >
             <Play className="w-4 h-4" />
-            Começar ({Math.min(QUESTIONS_PER_SESSION, pool.length)} questões)
+            Começar ({Math.min(quantidade, pool.length)} questões)
           </button>
         </div>
 
